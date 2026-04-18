@@ -574,6 +574,7 @@ const App = () => {
   const [darkMode, setDarkMode] = useState(true); // default dark pour desktop
   const [hideBalances, setHideBalances] = useState(false);
   const [investUpdates, setInvestUpdates] = useState({ pea: null, crypto: null });
+  const [investTotal, setInvestTotal] = useState({ pea: null, crypto: null });
 
   const [view, setView] = useState('dashboard');
   const [modal, setModal] = useState(null);
@@ -631,6 +632,7 @@ const App = () => {
       if (d.darkMode !== undefined) setDarkMode(d.darkMode);
       setHideBalances(d.hideBalances || false);
       setInvestUpdates(d.investUpdates || { pea: null, crypto: null });
+      setInvestTotal(d.investTotal || { pea: null, crypto: null });
       if (d.monthlyBudget) {
         const m = {};
         Object.entries(d.monthlyBudget.categories || {}).forEach(([k, c]) => {
@@ -652,12 +654,12 @@ const App = () => {
       db.collection('users').doc(user.uid).collection('data').doc('budget').set({
         soldeCompte, soldePEA, soldeCrypto, depenses, statsArchivees: statsArch,
         chargesFixesAuto: chargesFixes, chargesPayees, objectifs, abonnements: abos,
-        monthlyBudget: budget, darkMode, hideBalances, investUpdates,
+        monthlyBudget: budget, darkMode, hideBalances, investUpdates, investTotal,
         lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true }).then(() => setSyncing(false)).catch(() => setSyncing(false));
     }, 800);
     return () => clearTimeout(saveRef.current);
-  }, [user, soldeCompte, soldePEA, soldeCrypto, depenses, statsArch, chargesFixes, chargesPayees, objectifs, abos, budget, darkMode, hideBalances, investUpdates]);
+  }, [user, soldeCompte, soldePEA, soldeCrypto, depenses, statsArch, chargesFixes, chargesPayees, objectifs, abos, budget, darkMode, hideBalances, investUpdates, investTotal]);
 
   /* ---- Dark mode ---- */
   useEffect(() => {
@@ -1352,9 +1354,13 @@ const App = () => {
     const now = new Date();
     const vMois = depenses.filter(d => d.categorie === cfg.key && new Date(d.date).getMonth() === now.getMonth() && new Date(d.date).getFullYear() === now.getFullYear());
     const totalMois = vMois.reduce((s, d) => s + pa(d.montant), 0);
-    const totalInvesti = depenses.filter(d => d.categorie === cfg.key).reduce((s, d) => s + pa(d.montant), 0);
+    const autoInvesti = depenses.filter(d => d.categorie === cfg.key).reduce((s, d) => s + pa(d.montant), 0);
+    const overrideInvesti = investTotal?.[cfg.key];
+    const isOverridden = overrideInvesti !== null && overrideInvesti !== undefined;
+    const totalInvesti = isOverridden ? overrideInvesti : autoInvesti;
     const objectif = budget.categories[cfg.key]?.budget || 100;
     const plusValue = cfg.solde - totalInvesti;
+    const plusValuePct = totalInvesti > 0 ? (plusValue / totalInvesti) * 100 : 0;
     const lastUpd = investUpdates?.[cfg.key];
     const lastUpdLabel = lastUpd ? (() => {
       const d = new Date(lastUpd);
@@ -1464,16 +1470,40 @@ const App = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="card p-5">
-            <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Total versé depuis le début</div>
+            <div className="flex items-center justify-between mb-1">
+              <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">Total versé depuis le début</div>
+              <button onClick={() => {
+                        const v = prompt(`Total versé ${cfg.title} (montant cumulé réel) :`, totalInvesti.toFixed(2));
+                        if (v === null) return;
+                        const s = v.trim();
+                        if (s === '') { setInvestTotal(p => ({ ...p, [cfg.key]: null })); toast('Retour au calcul auto', 'success'); return; }
+                        const n = parseFloat(s.replace(',', '.'));
+                        if (!isNaN(n) && n >= 0) { setInvestTotal(p => ({ ...p, [cfg.key]: n })); toast('Total versé modifié', 'success'); }
+                      }}
+                      className="text-[11px] font-semibold text-violet-500 hover:text-violet-600">
+                Modifier
+              </button>
+            </div>
             <div className="font-display font-black text-2xl"><Amount v={totalInvesti} /></div>
-            <div className="text-xs text-slate-500 mt-1">{depenses.filter(d => d.categorie === cfg.key).length} versement{depenses.filter(d => d.categorie === cfg.key).length > 1 ? 's' : ''} cumulés</div>
+            <div className="text-xs text-slate-500 mt-1">
+              {isOverridden ? (
+                <span className="inline-flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-violet-500"></span>
+                  Valeur manuelle · <button onClick={() => { setInvestTotal(p => ({ ...p, [cfg.key]: null })); toast('Retour au calcul auto'); }} className="underline hover:text-violet-500">réinitialiser</button>
+                </span>
+              ) : (
+                <>{depenses.filter(d => d.categorie === cfg.key).length} versement{depenses.filter(d => d.categorie === cfg.key).length > 1 ? 's' : ''} cumulés</>
+              )}
+            </div>
           </div>
           <div className="card p-5">
-            <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Plus-value nette</div>
+            <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">{plusValue >= 0 ? 'Plus-value' : 'Moins-value'} nette</div>
             <div className={`font-display font-black text-2xl ${plusValue > 0 ? 'text-emerald-500' : plusValue < 0 ? 'text-rose-500' : ''}`}>
               <Amount v={plusValue} forceSign />
             </div>
-            <div className="text-xs text-slate-500 mt-1">Valeur actuelle − total versé</div>
+            <div className="text-xs text-slate-500 mt-1">
+              {totalInvesti > 0 ? `${plusValue >= 0 ? '+' : ''}${plusValuePct.toFixed(1)}% de rendement` : 'Valeur actuelle − total versé'}
+            </div>
           </div>
           <div className="card p-5">
             <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Versements ce mois-ci</div>
