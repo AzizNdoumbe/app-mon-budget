@@ -231,6 +231,15 @@ const fm = (amount, opts = {}) => {
 };
 const pa = (v) => { if (!v) return 0; const n = parseFloat(String(v).replace(',', '.').replace(/\s/g, '')); return isNaN(n) ? 0 : n; };
 const mk = (d = new Date()) => `${d.getFullYear()}-${d.getMonth()}`;
+/* Salary-period key — period is anchored to salary day, not the 1st */
+const spk = (d = new Date(), salaryDay = 24) => {
+  const day = d.getDate();
+  let y = d.getFullYear(), m = d.getMonth();
+  if (day < salaryDay) { m -= 1; if (m < 0) { m = 11; y -= 1; } }
+  return `${y}-${m}`;
+};
+/* Position of a calendar day relative to the start of a salary period (0 = salary day, increases through the period) */
+const dayPos = (day, salaryDay = 24) => ((day - salaryDay + 31) % 31);
 const mName = (k) => { const [y, m] = k.split('-').map(Number); return new Date(y, m).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }); };
 const mShort = (k) => { const [y, m] = k.split('-').map(Number); return new Date(y, m).toLocaleDateString('fr-FR', { month: 'short' }); };
 const dateLab = (d) => {
@@ -259,9 +268,25 @@ const EMOJI_LIBRARY = {
   'Symboles': ['✅','❌','⚠️','❓','❗','⭐','✨','🔥','💥','💫','🔔','🔕','🔒','🔓','🔑','🗝️','🔨','⚒️','🛠️','⚙️','🔗','🧩','🎯','📌','📍','📎','🔖','🏷️','🏳️','🏴','🚩','🏁','🔁','🔂','🔃','🔄','▶️','⏸️','⏹️','⏺️','⏭️','⏮️','⏯️','⏩','⏪','🆕','🆒','🆓','🆗','🆙','🆘']
 };
 
+/* French keyword index for emoji search */
+const EMOJI_KEYWORDS = {
+  '💰':'argent monnaie sac billet riche fortune','💵':'dollar billet argent monnaie cash','💴':'yen billet argent','💶':'euro billet argent monnaie','💷':'livre sterling billet','💳':'carte credit bancaire bleue paiement','💎':'diamant bijou luxe','🏦':'banque agence finance','💸':'depense argent envole perte','🪙':'piece coin crypto monnaie','📈':'graphique hausse bourse action investissement pea montee','📉':'graphique baisse perte chute','📊':'graphique stats statistiques','🧾':'recu ticket facture note','💼':'travail bureau mallette job business','🏧':'distributeur dab retrait','💹':'graphique hausse bourse','🔐':'cadenas securite securise','🏆':'trophee prix victoire gagnant','🎯':'objectif cible but but ambition','💝':'cadeau coeur saint valentin','🎁':'cadeau present anniversaire','🪪':'carte identite badge papiers',
+  '🍔':'burger hamburger fastfood mcdo','🍕':'pizza italien pizzeria','🍟':'frite fastfood','🌭':'hotdog saucisse','🥪':'sandwich pain casse-croute','🌮':'taco mexicain','🌯':'wrap burrito mexicain','🥙':'pita kebab grec','🍝':'pates spaghetti italien','🍜':'ramen nouilles soupe asiatique','🍛':'curry riz indien','🍣':'sushi japonais','🍱':'bento japonais asiatique','🍙':'onigiri japonais riz','🥟':'ravioli dim sum gyoza','🍗':'poulet cuisse viande','🍖':'viande grillade barbecue','🥩':'steak viande boeuf','🥘':'paella plat mijote','🍲':'soupe pot mijote','🥗':'salade legumes healthy sain','🥐':'croissant boulangerie viennoiserie','🥖':'baguette pain boulangerie','🧀':'fromage','🥞':'pancake crepe','🧇':'gaufre','🍩':'donut beignet dessert','🍰':'gateau patisserie dessert part','🎂':'gateau anniversaire','🍪':'cookie biscuit','🍫':'chocolat tablette','🍬':'bonbon sucre','🍭':'sucette bonbon','🍦':'glace cone dessert','☕':'cafe coffee expresso boisson chaude','🍵':'the matcha boisson','🥤':'soda boisson coca','🧃':'jus brique boisson','🍷':'vin rouge alcool','🍺':'biere alcool pression','🍻':'biere trinquer alcool','🥂':'champagne flute trinquer','🥃':'whisky alcool','🍸':'cocktail martini','🍹':'cocktail tropical','🍾':'champagne fete','🧊':'glacon froid',
+  '🚗':'voiture auto bagnole','🚕':'taxi uber voiture','🚙':'suv 4x4 voiture','🏎️':'voiture course formule sport','🚓':'police voiture','🚑':'ambulance urgence','🚒':'pompier camion','🚐':'van fourgon','🛻':'pickup utilitaire','🚚':'camion livraison','🚛':'camion poids lourd','🚜':'tracteur agricole','🏍️':'moto motard','🛵':'scooter','🛴':'trottinette','🚲':'velo bicyclette cyclisme','🛼':'roller patin','🛹':'skate planche','✈️':'avion voyage vol','🚀':'fusee espace decollage','🛸':'ovni soucoupe','🚁':'helicoptere','⛵':'voilier bateau','🚢':'bateau croisiere ferry','🚂':'train sncf locomotive','🚆':'train rail','🚊':'tram','🚇':'metro souterrain','⛽':'essence carburant station gasoil pompe','🅿️':'parking stationnement','🗺️':'carte voyage geo',
+  '🎮':'jeu video gaming console manette','🕹️':'arcade joystick jeu','🎰':'casino jackpot machine sous','🎲':'des hasard jeu','♟️':'echec piece jeu','🎳':'bowling','🎱':'billard pool','🏓':'ping pong tennis table','🏀':'basket basketball','⚽':'foot football ballon','🏈':'football americain','⚾':'baseball','🎾':'tennis','🏐':'volley volleyball','🏉':'rugby','🥊':'boxe gants','🎽':'sport maillot','🏂':'snowboard ski','⛷️':'ski neige montagne','🏄':'surf vague','🏊':'natation piscine','🚴':'velo cyclisme','🧗':'escalade grimper','🎣':'peche poisson canne','🎬':'cinema film clap','🎥':'camera tournage film','📽️':'projecteur cinema film','🎭':'theatre masque','🎨':'peinture art palette','🎪':'cirque chapiteau','🎟️':'ticket entree spectacle','🎫':'billet ticket','🎤':'micro karaoke chant','🎧':'casque audio musique ecouteur','🎼':'musique partition note','🎹':'piano clavier','🎸':'guitare','🎺':'trompette','🎷':'saxophone','🥁':'batterie tambour','📚':'livres lecture bibliotheque etudes','📖':'livre ouvert lecture',
+  '🏠':'maison foyer logement domicile','🏡':'maison jardin pavillon','🏢':'immeuble bureau building','🏨':'hotel hebergement','🛋️':'canape salon meuble divan','🛏️':'lit chambre dormir','🚪':'porte entree','🪑':'chaise siege','🪟':'fenetre','🧺':'panier linge buanderie','🧴':'shampoing savon flacon','🧼':'savon hygiene','🧽':'eponge nettoyer','🧹':'balai menage','🧻':'pq toilette papier','🚿':'douche eau','🛁':'bain baignoire','🚽':'toilettes wc','💡':'idee electricite ampoule lumiere','🔌':'prise electricite branchement','🔦':'lampe torche poche','🕯️':'bougie flamme','🔑':'cle clef serrure','📺':'tele television tv','📻':'radio musique','📞':'telephone fixe combine','☎️':'telephone fixe','📱':'telephone portable mobile smartphone','💻':'ordinateur laptop pc','🖥️':'ordinateur fixe ecran','🖨️':'imprimante print',
+  '🏥':'hopital sante medecin clinique','💊':'medicament pharmacie sante pilule cachet','💉':'vaccin injection seringue medecin','🩹':'pansement plaie','🩺':'stethoscope medecin sante','🦷':'dent dentiste molaire','👁️':'oeil vue voir optique','👓':'lunettes vue optique','🕶️':'lunettes soleil','💪':'muscle force biceps fitness','🧠':'cerveau intelligence reflexion','🧘':'yoga meditation zen relaxation','🏋️':'sport musculation salle gym poids','🏃':'course running jogging coureur','🤸':'gymnastique acrobate','🧖':'sauna spa hammam','💆':'massage spa detente','💅':'manucure ongles vernis',
+  '👕':'tshirt vetement haut','👔':'chemise cravate vetement bureau','👖':'jean pantalon vetement','👗':'robe vetement','👘':'kimono japonais','🧥':'manteau veste hiver','🧣':'echarpe foulard','🧤':'gants','🧦':'chaussette','👒':'chapeau capeline','🎩':'haut forme chapeau','🎓':'diplome ecole etudes universite remise','👑':'couronne roi reine','💍':'bague alliance bijou mariage','👜':'sac main','👛':'porte monnaie sac','👝':'pochette sac','🎒':'sac dos ecole cartable','🛍️':'shopping achat sac courses','👠':'chaussure talon escarpin','👟':'basket chaussure sport tennis','👞':'mocassin chaussure ville','🥾':'rangers bottes randonnee','🧢':'casquette','👙':'maillot bain bikini','⌚':'montre poignet horloge','💄':'rouge levres maquillage','💋':'bisou rouge baiser',
+  '👶':'bebe enfant nourrisson','🧒':'enfant gamin','👨‍👩‍👧':'famille parents','👨‍👩‍👦':'famille parents','❤️':'coeur amour rouge','💖':'coeur amour scintillant','💕':'coeur amour deux','💘':'coeur amour fleche','🎉':'fete celebration confetti','🎈':'ballon fete','🎀':'noeud ruban cadeau','🐶':'chien animal compagnie chiot','🐱':'chat animal compagnie chaton','🐰':'lapin animal','🐹':'hamster rongeur animal','🦊':'renard','🐻':'ours','🐼':'panda','🐨':'koala','🐯':'tigre','🦁':'lion','🐮':'vache','🐷':'cochon porc','🐸':'grenouille','🐔':'poule poulet','🐧':'pingouin manchot','🐴':'cheval','🐝':'abeille miel','🦋':'papillon','🐢':'tortue','🐬':'dauphin','🐟':'poisson',
+  '📁':'dossier classeur fichier','📂':'dossier ouvert fichier','📅':'calendrier date jour planning','📆':'calendrier date arrache','📋':'presse papier liste','📐':'equerre regle geometrie','✂️':'ciseaux couper','🖊️':'stylo bille ecriture','🖋️':'plume stylo ecriture','✒️':'plume calligraphie','📝':'note ecriture memo crayon','📓':'cahier bloc notes','📰':'journal news presse','🏫':'ecole etablissement etudes',
+  '🌸':'fleur cerisier rose','🌼':'fleur marguerite','🌻':'tournesol fleur','🌺':'hibiscus fleur tropical','🌹':'rose fleur amour','🌷':'tulipe fleur','💐':'bouquet fleurs','🌵':'cactus desert','🌴':'palmier tropical','🌳':'arbre nature','🌲':'sapin pin nature','🍀':'trefle chance','🍃':'feuille nature','🌍':'monde terre planete voyage','🏔️':'montagne sommet neige','🏖️':'plage vacances mer','🏝️':'ile tropical vacances','🏕️':'camping tente','🌅':'lever soleil aube','🌃':'nuit ville','🎆':'feu artifice','☀️':'soleil chaud beau temps','🌙':'lune nuit','⭐':'etoile favori important','✨':'etincelle paillette magique scintille','❄️':'neige flocon froid hiver','🔥':'feu chaud tendance flamme hot','💧':'goutte eau','🌊':'vague mer ocean',
+  '✅':'check valide ok confirme','❌':'erreur faux croix annule','⚠️':'attention danger warning','❓':'question interrogation','❗':'exclamation important','💥':'explosion choc impact','💫':'etoile etourdi','🔔':'cloche notification alerte','🔕':'cloche barree muet','🔒':'verrou cadenas securise ferme','🔓':'cadenas ouvert','🗝️':'cle ancienne','🔨':'marteau bricolage','🛠️':'outils bricolage reparation','⚙️':'engrenage parametres reglages','🔗':'lien chaine','🧩':'puzzle piece','📌':'epingle pin punaise','📍':'pin localisation lieu','🏷️':'etiquette tag label','🚩':'drapeau important','🏁':'drapeau arrivee fin','🔁':'repeat boucle abonnement recurrent','🔄':'rafraichir actualiser refresh','▶️':'play lecture','⏸️':'pause','⏹️':'stop arret'
+};
+
 /* Simple rule-based AI analysis of expenses — returns health score + insights */
-const analyzeBudget = ({ depenses, monthlyTotals, categories, resteAVivre, totalDepense }) => {
+const analyzeBudget = ({ depenses, monthlyTotals, categories, resteAVivre, totalDepense, salaryDay = 24 }) => {
   const now = new Date();
+  const currPeriod = spk(now, salaryDay);
   const insights = [];
   let score = 100;
 
@@ -281,11 +306,8 @@ const analyzeBudget = ({ depenses, monthlyTotals, categories, resteAVivre, total
     }
   });
 
-  // Current-month transactions
-  const monthDeps = depenses.filter(d => {
-    const dd = new Date(d.date);
-    return dd.getMonth() === now.getMonth() && dd.getFullYear() === now.getFullYear();
-  });
+  // Current salary-period transactions
+  const monthDeps = depenses.filter(d => spk(new Date(d.date), salaryDay) === currPeriod);
 
   // 2. Delivery orders pattern (Uber Eats, Deliveroo, etc.)
   const delivPat = /uber.?eat|deliveroo|just.?eat|frichti|tiptoque|livraison|lieferando|foodora|wolt|glovo/i;
@@ -505,9 +527,23 @@ const BtnGhost = ({ children, ...p }) => (
 const EmojiPicker = ({ value, onChange, compact = false }) => {
   const [cat, setCat] = useState(Object.keys(EMOJI_LIBRARY)[0]);
   const [query, setQuery] = useState('');
-  const filtered = query
-    ? Object.values(EMOJI_LIBRARY).flat().filter((e, i, a) => a.indexOf(e) === i)
-    : EMOJI_LIBRARY[cat];
+  const filtered = useMemo(() => {
+    const q = normStr(query);
+    if (!q) return EMOJI_LIBRARY[cat];
+    const all = [...new Set(Object.values(EMOJI_LIBRARY).flat())];
+    const scored = [];
+    all.forEach(e => {
+      const kw = normStr(EMOJI_KEYWORDS[e] || '');
+      if (!kw) return;
+      const tokens = kw.split(' ');
+      let score = 0;
+      if (tokens.some(t => t === q)) score = 3;
+      else if (tokens.some(t => t.startsWith(q))) score = 2;
+      else if (kw.includes(q)) score = 1;
+      if (score) scored.push({ e, score });
+    });
+    return scored.sort((a, b) => b.score - a.score).map(x => x.e);
+  }, [query, cat]);
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
@@ -668,30 +704,30 @@ const App = () => {
     if (meta) meta.content = darkMode ? '#0b0f1a' : '#f7f8fc';
   }, [darkMode]);
 
-  /* ---- Archive on month change ---- */
+  /* ---- Archive on salary-period change ---- */
   useEffect(() => {
     const check = () => {
       const now = new Date();
-      const curr = mk(now);
-      const last = localStorage.getItem('lastMonthChecked');
+      const sd = budget.jourPaiementSalaire || 24;
+      const curr = spk(now, sd);
+      const last = localStorage.getItem('lastPeriodChecked');
       if (last && last !== curr) {
         const [ly, lm] = last.split('-').map(Number);
         const t = {};
         Object.keys(budget.categories).forEach(k => t[k] = 0);
         t.exceptionnel = 0; t.depense = 0;
         depenses.forEach(d => {
-          const dd = new Date(d.date);
-          if (dd.getMonth() === lm && dd.getFullYear() === ly) t[d.categorie] = (t[d.categorie] || 0) + pa(d.montant);
+          if (spk(new Date(d.date), sd) === last) t[d.categorie] = (t[d.categorie] || 0) + pa(d.montant);
         });
         const total = Object.values(t).reduce((s, v) => s + v, 0);
-        setStatsArch(p => ({ ...p, [last]: { depenses: t, total, date: new Date(ly, lm, 1) } }));
+        setStatsArch(p => ({ ...p, [last]: { depenses: t, total, date: new Date(ly, lm, sd) } }));
       }
-      localStorage.setItem('lastMonthChecked', curr);
+      localStorage.setItem('lastPeriodChecked', curr);
     };
     check();
     const i = setInterval(check, 3600000);
     return () => clearInterval(i);
-  }, [depenses, budget.categories]);
+  }, [depenses, budget.categories, budget.jourPaiementSalaire]);
 
   /* ---- Auto-process subscriptions ---- */
   useEffect(() => {
@@ -727,45 +763,41 @@ const App = () => {
   }, [abos]);
 
   /* ---- Derived ---- */
+  const salaryDay = budget.jourPaiementSalaire || 24;
+  const currSPK = spk(new Date(), salaryDay);
+
   const monthlyTotals = useMemo(() => {
-    const now = new Date();
     const t = {};
     Object.keys(budget.categories).forEach(k => t[k] = 0);
     t.exceptionnel = 0; t.depense = 0;
     depenses.forEach(d => {
-      const dd = new Date(d.date);
-      if (dd.getMonth() === now.getMonth() && dd.getFullYear() === now.getFullYear()) t[d.categorie] = (t[d.categorie] || 0) + pa(d.montant);
+      if (spk(new Date(d.date), salaryDay) === currSPK) t[d.categorie] = (t[d.categorie] || 0) + pa(d.montant);
     });
     return t;
-  }, [depenses, budget.categories]);
+  }, [depenses, budget.categories, currSPK, salaryDay]);
 
   const totalDepense = useMemo(() => Object.values(monthlyTotals).reduce((s, v) => s + v, 0), [monthlyTotals]);
-  const currMK = mk();
-  const chargesPayeesM = useMemo(() => chargesFixes.filter(c => chargesPayees[currMK]?.[c.id]).reduce((s, c) => s + pa(c.montant), 0), [chargesFixes, chargesPayees, currMK]);
-  const chargesNonPayeesM = useMemo(() => chargesFixes.filter(c => !chargesPayees[currMK]?.[c.id]).reduce((s, c) => s + pa(c.montant), 0), [chargesFixes, chargesPayees, currMK]);
+  const chargesPayeesM = useMemo(() => chargesFixes.filter(c => chargesPayees[currSPK]?.[c.id]).reduce((s, c) => s + pa(c.montant), 0), [chargesFixes, chargesPayees, currSPK]);
+  const chargesNonPayeesM = useMemo(() => chargesFixes.filter(c => !chargesPayees[currSPK]?.[c.id]).reduce((s, c) => s + pa(c.montant), 0), [chargesFixes, chargesPayees, currSPK]);
   const totalChargesF = budget.chargesfixes + chargesPayeesM + chargesNonPayeesM;
   const resteAVivre = budget.revenus - totalChargesF;
 
-  const soldePrev = useMemo(() => {
-    const today = new Date().getDate();
-    const target = budget.jourPaiementSalaire || 24;
-    let r = 0;
-    chargesFixes.forEach(c => {
-      if (chargesPayees[currMK]?.[c.id]) return;
-      if (today < target) { if (c.jourPaiement >= today && c.jourPaiement <= target) r += pa(c.montant); }
-      else { if (c.jourPaiement <= target) r += pa(c.montant); }
-    });
-    return { restantes: r, solde: soldeCompte - r };
-  }, [chargesFixes, chargesPayees, currMK, soldeCompte, budget.jourPaiementSalaire]);
+  const soldePrev = useMemo(() => ({
+    restantes: chargesNonPayeesM,
+    solde: soldeCompte - chargesNonPayeesM
+  }), [chargesNonPayeesM, soldeCompte]);
 
   const notifs = useMemo(() => {
     const today = new Date().getDate();
-    return chargesFixes.filter(c => !chargesPayees[currMK]?.[c.id] && c.jourPaiement <= today).map(c => ({ ...c, daysLate: today - c.jourPaiement }));
-  }, [chargesFixes, chargesPayees, currMK]);
+    const todayPos = dayPos(today, salaryDay);
+    return chargesFixes
+      .filter(c => !chargesPayees[currSPK]?.[c.id] && dayPos(c.jourPaiement, salaryDay) <= todayPos)
+      .map(c => ({ ...c, daysLate: todayPos - dayPos(c.jourPaiement, salaryDay) }));
+  }, [chargesFixes, chargesPayees, currSPK, salaryDay]);
 
   const budgetHealth = useMemo(() => analyzeBudget({
-    depenses, monthlyTotals, categories: budget.categories, resteAVivre, totalDepense
-  }), [depenses, monthlyTotals, budget.categories, resteAVivre, totalDepense]);
+    depenses, monthlyTotals, categories: budget.categories, resteAVivre, totalDepense, salaryDay
+  }), [depenses, monthlyTotals, budget.categories, resteAVivre, totalDepense, salaryDay]);
   const healthScore = budgetHealth.score;
 
   const totalPatrimoine = soldeCompte + soldePEA + soldeCrypto + objectifs.reduce((s, g) => s + (g.actuel || 0), 0);
@@ -815,8 +847,8 @@ const App = () => {
   const toggleCharge = (id) => {
     const c = chargesFixes.find(x => x.id === id);
     if (!c) return;
-    const was = chargesPayees[currMK]?.[id];
-    setChargesPayees(p => ({ ...p, [currMK]: { ...(p[currMK] || {}), [id]: !was } }));
+    const was = chargesPayees[currSPK]?.[id];
+    setChargesPayees(p => ({ ...p, [currSPK]: { ...(p[currSPK] || {}), [id]: !was } }));
     setSoldeCompte(s => was ? s + pa(c.montant) : s - pa(c.montant));
   };
   const addRevenu = (e) => {
@@ -958,12 +990,11 @@ const App = () => {
         const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
         const k = `${d.getFullYear()}-${d.getMonth()}`;
         let total = 0;
-        if (k === mk()) total = totalDepense;
+        if (k === currSPK) total = totalDepense;
         else if (statsArch[k]) total = statsArch[k].total || 0;
         else {
           depenses.forEach(dep => {
-            const dd = new Date(dep.date);
-            if (dd.getMonth() === d.getMonth() && dd.getFullYear() === d.getFullYear()) total += pa(dep.montant);
+            if (spk(new Date(dep.date), salaryDay) === k) total += pa(dep.montant);
           });
         }
         months.push({ label: d.toLocaleDateString('fr-FR', { month: 'short' }), total });
@@ -1175,15 +1206,15 @@ const App = () => {
                 </div>
                 <div className="text-3xl font-display font-black mb-1">{fm(chargesFixes.reduce((s, c) => s + pa(c.montant), 0))}</div>
                 <div className="text-xs text-slate-500 mb-4">
-                  {chargesFixes.filter(c => chargesPayees[currMK]?.[c.id]).length}/{chargesFixes.length} payées
+                  {chargesFixes.filter(c => chargesPayees[currSPK]?.[c.id]).length}/{chargesFixes.length} payées
                 </div>
                 <div className="h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden mb-4">
                   <div className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-green-500 transition-all duration-500"
-                       style={{ width: `${(chargesFixes.filter(c => chargesPayees[currMK]?.[c.id]).length / chargesFixes.length) * 100}%` }}></div>
+                       style={{ width: `${(chargesFixes.filter(c => chargesPayees[currSPK]?.[c.id]).length / chargesFixes.length) * 100}%` }}></div>
                 </div>
                 <div className="space-y-1.5 max-h-64 overflow-y-auto scrollbar-hide">
-                  {chargesFixes.sort((a, b) => a.jourPaiement - b.jourPaiement).slice(0, 5).map(c => {
-                    const paid = chargesPayees[currMK]?.[c.id];
+                  {[...chargesFixes].sort((a, b) => dayPos(a.jourPaiement, salaryDay) - dayPos(b.jourPaiement, salaryDay)).slice(0, 5).map(c => {
+                    const paid = chargesPayees[currSPK]?.[c.id];
                     return (
                       <div key={c.id} className="flex items-center gap-2">
                         <button onClick={() => toggleCharge(c.id)}
@@ -1550,30 +1581,28 @@ const App = () => {
 
   /* ─────── STATS ─────── */
   const StatsView = () => {
-    const [selK, setSelK] = useState(mk());
+    const [selK, setSelK] = useState(currSPK);
     const lineRef = useRef(null), lineI = useRef(null);
     const donutRef = useRef(null), donutI = useRef(null);
 
     const getTotals = (k) => {
-      const [y, m] = k.split('-').map(Number);
       const t = {};
       Object.keys(budget.categories).forEach(x => t[x] = 0);
       t.exceptionnel = 0; t.depense = 0;
       depenses.forEach(d => {
-        const dd = new Date(d.date);
-        if (dd.getMonth() === m && dd.getFullYear() === y) t[d.categorie] = (t[d.categorie] || 0) + pa(d.montant);
+        if (spk(new Date(d.date), salaryDay) === k) t[d.categorie] = (t[d.categorie] || 0) + pa(d.montant);
       });
       return t;
     };
 
-    const isCurr = selK === mk();
+    const isCurr = selK === currSPK;
     const totals = isCurr ? getTotals(selK) : (statsArch[selK]?.depenses || getTotals(selK));
     const total = Object.values(totals).reduce((s, v) => s + v, 0);
     const availMonths = useMemo(() => {
-      const all = new Set([mk(), ...Object.keys(statsArch)]);
-      depenses.forEach(d => { const dd = new Date(d.date); all.add(`${dd.getFullYear()}-${dd.getMonth()}`); });
+      const all = new Set([currSPK, ...Object.keys(statsArch)]);
+      depenses.forEach(d => { all.add(spk(new Date(d.date), salaryDay)); });
       return Array.from(all).sort().reverse();
-    }, [statsArch, depenses]);
+    }, [statsArch, depenses, currSPK, salaryDay]);
 
     const trendData = useMemo(() => {
       const months = [];
@@ -1581,11 +1610,11 @@ const App = () => {
       for (let i = 11; i >= 0; i--) {
         const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
         const k = `${d.getFullYear()}-${d.getMonth()}`;
-        const t = k === mk() ? getTotals(k) : (statsArch[k]?.depenses || getTotals(k));
+        const t = k === currSPK ? getTotals(k) : (statsArch[k]?.depenses || getTotals(k));
         months.push({ label: d.toLocaleDateString('fr-FR', { month: 'short' }), total: Object.values(t).reduce((s, v) => s + v, 0) });
       }
       return months;
-    }, [statsArch, depenses, budget.categories]);
+    }, [statsArch, depenses, budget.categories, currSPK, salaryDay]);
 
     useEffect(() => {
       if (!lineRef.current) return;
@@ -1633,8 +1662,8 @@ const App = () => {
     }, [totals, budget.categories]);
 
     const topCats = Object.entries(budget.categories).map(([k, c]) => ({ k, c, d: totals[k] || 0 })).filter(x => x.d > 0).sort((a, b) => b.d - a.d);
-    const dayCount = isCurr ? new Date().getDate() : new Date(new Date(parseInt(selK.split('-')[0]), parseInt(selK.split('-')[1]) + 1, 0)).getDate();
-    const txCount = depenses.filter(d => { const dd = new Date(d.date); const [y, m] = selK.split('-').map(Number); return dd.getMonth() === m && dd.getFullYear() === y; }).length;
+    const dayCount = isCurr ? Math.max(1, dayPos(new Date().getDate(), salaryDay) + 1) : 31;
+    const txCount = depenses.filter(d => spk(new Date(d.date), salaryDay) === selK).length;
 
     return (
       <div className="space-y-6 animate-fade-in">
@@ -1666,7 +1695,7 @@ const App = () => {
 
         <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1">
           {availMonths.slice(0, 12).map(k => {
-            const t = k === mk() ? Object.values(getTotals(k)).reduce((s, v) => s + v, 0) : (statsArch[k]?.total || Object.values(getTotals(k)).reduce((s, v) => s + v, 0));
+            const t = k === currSPK ? Object.values(getTotals(k)).reduce((s, v) => s + v, 0) : (statsArch[k]?.total || Object.values(getTotals(k)).reduce((s, v) => s + v, 0));
             const sel = selK === k;
             return (
               <button key={k} onClick={() => setSelK(k)}
@@ -2329,8 +2358,8 @@ const App = () => {
           + Ajouter une charge
         </button>
         <div className="space-y-2">
-          {chargesFixes.sort((a, b) => a.jourPaiement - b.jourPaiement).map(c => {
-            const paid = chargesPayees[currMK]?.[c.id];
+          {[...chargesFixes].sort((a, b) => dayPos(a.jourPaiement, salaryDay) - dayPos(b.jourPaiement, salaryDay)).map(c => {
+            const paid = chargesPayees[currSPK]?.[c.id];
             return (
               <div key={c.id} className={`rounded-xl p-3 flex items-center gap-3 transition ${paid ? 'bg-emerald-50 dark:bg-emerald-950/30' : 'bg-slate-50 dark:bg-slate-800/50'}`}>
                 <button onClick={() => toggleCharge(c.id)} className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${paid ? 'bg-emerald-500 text-white' : 'bg-white dark:bg-slate-700 border-2 border-slate-300 dark:border-slate-600'}`}>
@@ -2430,11 +2459,7 @@ const App = () => {
         {modal?.type === 'catDetail' && (() => {
           const cat = budget.categories[modal.key];
           if (!cat) return null;
-          const catDeps = depenses.filter(d => {
-            const dd = new Date(d.date);
-            const now = new Date();
-            return d.categorie === modal.key && dd.getMonth() === now.getMonth() && dd.getFullYear() === now.getFullYear();
-          });
+          const catDeps = depenses.filter(d => d.categorie === modal.key && spk(new Date(d.date), salaryDay) === currSPK);
           const dep = monthlyTotals[modal.key] || 0;
           const pct = cat.budget > 0 ? (dep / cat.budget) * 100 : 0;
           return (
