@@ -662,7 +662,25 @@ const App = () => {
       setDepenses(d.depenses || []);
       setStatsArch(d.statsArchivees || {});
       setChargesFixes(d.chargesFixesAuto || []);
-      setChargesPayees(d.chargesPayees || {});
+      // One-time migration: clear current period's chargesPayees because the
+      // previous mk-based code wrote under the same key as the new spk period,
+      // so existing checkmarks need a hard reset on first launch of new model.
+      let cp = d.chargesPayees || {};
+      const migKey = 'migrate_spk_charges_v1';
+      if (!localStorage.getItem(migKey)) {
+        const sd = d.monthlyBudget?.jourPaiementSalaire || 24;
+        const currPeriod = spk(new Date(), sd);
+        if (cp[currPeriod] && Object.keys(cp[currPeriod]).length > 0) {
+          cp = { ...cp };
+          delete cp[currPeriod];
+          // Persist directly to avoid race with initialRef-gated save effect
+          db.collection('users').doc(user.uid).collection('data').doc('budget')
+            .set({ chargesPayees: cp, lastUpdate: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true })
+            .catch(() => {});
+        }
+        localStorage.setItem(migKey, '1');
+      }
+      setChargesPayees(cp);
       setObjectifs(d.objectifs || []);
       setAbos(d.abonnements || []);
       if (d.darkMode !== undefined) setDarkMode(d.darkMode);
