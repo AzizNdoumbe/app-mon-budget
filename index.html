@@ -668,7 +668,17 @@ const App = () => {
       if (d.darkMode !== undefined) setDarkMode(d.darkMode);
       setHideBalances(d.hideBalances || false);
       setInvestUpdates(d.investUpdates || { pea: null, crypto: null });
-      setInvestTotal(d.investTotal || { pea: null, crypto: null });
+      // Migrate legacy shape (number → { base, since }) so new versements add on top
+      const rawIT = d.investTotal || { pea: null, crypto: null };
+      const normIT = {};
+      ['pea', 'crypto'].forEach(k => {
+        const v = rawIT[k];
+        if (v == null) normIT[k] = null;
+        else if (typeof v === 'number') normIT[k] = { base: v, since: new Date().toISOString() };
+        else if (typeof v === 'object' && typeof v.base === 'number') normIT[k] = v;
+        else normIT[k] = null;
+      });
+      setInvestTotal(normIT);
       if (d.monthlyBudget) {
         const m = {};
         Object.entries(d.monthlyBudget.categories || {}).forEach(([k, c]) => {
@@ -1385,10 +1395,15 @@ const App = () => {
     const now = new Date();
     const vMois = depenses.filter(d => d.categorie === cfg.key && new Date(d.date).getMonth() === now.getMonth() && new Date(d.date).getFullYear() === now.getFullYear());
     const totalMois = vMois.reduce((s, d) => s + pa(d.montant), 0);
-    const autoInvesti = depenses.filter(d => d.categorie === cfg.key).reduce((s, d) => s + pa(d.montant), 0);
-    const overrideInvesti = investTotal?.[cfg.key];
-    const isOverridden = overrideInvesti !== null && overrideInvesti !== undefined;
-    const totalInvesti = isOverridden ? overrideInvesti : autoInvesti;
+    const allVersements = depenses.filter(d => d.categorie === cfg.key);
+    const autoInvesti = allVersements.reduce((s, d) => s + pa(d.montant), 0);
+    const ov = investTotal?.[cfg.key];
+    const isOverridden = !!(ov && typeof ov === 'object' && typeof ov.base === 'number');
+    const sinceDate = isOverridden ? new Date(ov.since) : null;
+    const versementsAfterBase = isOverridden
+      ? allVersements.filter(d => new Date(d.date) > sinceDate).reduce((s, d) => s + pa(d.montant), 0)
+      : 0;
+    const totalInvesti = isOverridden ? (ov.base + versementsAfterBase) : autoInvesti;
     const objectif = budget.categories[cfg.key]?.budget || 100;
     const plusValue = cfg.solde - totalInvesti;
     const plusValuePct = totalInvesti > 0 ? (plusValue / totalInvesti) * 100 : 0;
@@ -1504,12 +1519,15 @@ const App = () => {
             <div className="flex items-center justify-between mb-1">
               <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">Total versé depuis le début</div>
               <button onClick={() => {
-                        const v = prompt(`Total versé ${cfg.title} (montant cumulé réel) :`, totalInvesti.toFixed(2));
+                        const v = prompt(`Total versé ${cfg.title} à ce jour :\n(les versements ajoutés ensuite s'additionneront automatiquement)`, totalInvesti.toFixed(2));
                         if (v === null) return;
                         const s = v.trim();
                         if (s === '') { setInvestTotal(p => ({ ...p, [cfg.key]: null })); toast('Retour au calcul auto', 'success'); return; }
                         const n = parseFloat(s.replace(',', '.'));
-                        if (!isNaN(n) && n >= 0) { setInvestTotal(p => ({ ...p, [cfg.key]: n })); toast('Total versé modifié', 'success'); }
+                        if (!isNaN(n) && n >= 0) {
+                          setInvestTotal(p => ({ ...p, [cfg.key]: { base: n, since: new Date().toISOString() } }));
+                          toast('Total versé modifié', 'success');
+                        }
                       }}
                       className="text-[11px] font-semibold text-violet-500 hover:text-violet-600">
                 Modifier
@@ -1518,12 +1536,12 @@ const App = () => {
             <div className="font-display font-black text-2xl"><Amount v={totalInvesti} /></div>
             <div className="text-xs text-slate-500 mt-1">
               {isOverridden ? (
-                <span className="inline-flex items-center gap-1">
+                <span className="inline-flex items-center gap-1 flex-wrap">
                   <span className="w-1.5 h-1.5 rounded-full bg-violet-500"></span>
-                  Valeur manuelle · <button onClick={() => { setInvestTotal(p => ({ ...p, [cfg.key]: null })); toast('Retour au calcul auto'); }} className="underline hover:text-violet-500">réinitialiser</button>
+                  Base {fm(ov.base, { compact: true })} + {fm(versementsAfterBase, { compact: true })} ajoutés · <button onClick={() => { setInvestTotal(p => ({ ...p, [cfg.key]: null })); toast('Retour au calcul auto'); }} className="underline hover:text-violet-500">réinitialiser</button>
                 </span>
               ) : (
-                <>{depenses.filter(d => d.categorie === cfg.key).length} versement{depenses.filter(d => d.categorie === cfg.key).length > 1 ? 's' : ''} cumulés</>
+                <>{allVersements.length} versement{allVersements.length > 1 ? 's' : ''} cumulés</>
               )}
             </div>
           </div>
@@ -1552,25 +1570,29 @@ const App = () => {
             <div style={{ height: 280 }}><canvas ref={ref}></canvas></div>
           </div>
 
-          <div className="card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-display font-bold text-lg">Versements du mois</h3>
-              <div className="text-xs text-slate-500">{vMois.length}</div>
+          <div className="card p-6 flex flex-col" style={{ maxHeight: 480 }}>
+            <div className="flex items-center justify-between mb-4 shrink-0">
+              <div>
+                <h3 className="font-display font-bold text-lg">Versements</h3>
+                <p className="text-[11px] text-slate-500">{allVersements.length} au total · {fm(autoInvesti, { compact: true })}</p>
+              </div>
             </div>
-            {vMois.length === 0 ? (
-              <div className="py-6 text-center text-sm text-slate-500">Aucun versement ce mois-ci</div>
+            {allVersements.length === 0 ? (
+              <div className="py-6 text-center text-sm text-slate-500">Aucun versement enregistré</div>
             ) : (
-              <div className="space-y-2 max-h-96 overflow-y-auto">
-                {vMois.map(d => (
-                  <div key={d.id} className="flex items-center gap-3 p-2 rounded-lg">
-                    <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${cfg.colors} flex items-center justify-center text-white text-sm`}>{cfg.emoji}</div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-sm truncate">{d.description || `Versement ${cfg.title}`}</div>
-                      <div className="text-[11px] text-slate-500">{dateLab(d.date)}</div>
+              <div className="space-y-2 overflow-y-auto pr-1 -mr-1 relative" style={{ maskImage: 'linear-gradient(to bottom, black 85%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to bottom, black 85%, transparent 100%)' }}>
+                {[...allVersements]
+                  .sort((a, b) => new Date(b.date) - new Date(a.date))
+                  .map(d => (
+                    <div key={d.id} className="flex items-center gap-3 p-2 rounded-lg">
+                      <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${cfg.colors} flex items-center justify-center text-white text-sm shrink-0`}>{d.emoji || cfg.emoji}</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-sm truncate">{d.description || `Versement ${cfg.title}`}</div>
+                        <div className="text-[11px] text-slate-500">{new Date(d.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}</div>
+                      </div>
+                      <div className="font-bold text-sm text-emerald-500 shrink-0">+{fm(d.montant, { compact: true })}</div>
                     </div>
-                    <div className="font-bold text-sm text-emerald-500">+{fm(d.montant, { compact: true })}</div>
-                  </div>
-                ))}
+                  ))}
               </div>
             )}
           </div>
