@@ -14,7 +14,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -31,8 +31,9 @@
     theme: {
       extend: {
         fontFamily: {
-          sans: ['Inter', 'system-ui', 'sans-serif'],
-          display: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+          sans: ['Geist', 'Inter', 'system-ui', 'sans-serif'],
+          display: ['Geist', 'Inter', 'sans-serif'],
+          mono: ['Geist Mono', 'ui-monospace', 'monospace'],
         },
         screens: {
           'xs': '480px',
@@ -58,11 +59,52 @@
 </script>
 
 <style>
+  /* ============================================================
+     DESIGN TOKENS — light-mode editorial palette
+     ============================================================ */
+  :root {
+    --bg: oklch(0.985 0.005 85);
+    --bg-2: oklch(0.965 0.005 85);
+    --surface: #ffffff;
+    --ink: oklch(0.22 0.02 250);
+    --ink-soft: oklch(0.42 0.015 250);
+    --ink-mute: oklch(0.60 0.01 250);
+    --border: oklch(0.93 0.004 80);
+    --border-strong: oklch(0.86 0.005 80);
+    --positive: oklch(0.55 0.12 155);
+    --positive-soft: oklch(0.95 0.04 155);
+    --negative: oklch(0.58 0.18 25);
+    --negative-soft: oklch(0.96 0.03 25);
+    --warn: oklch(0.72 0.13 75);
+    --accent: oklch(0.30 0.07 245);
+    --accent-2: oklch(0.45 0.10 245);
+    --accent-soft: oklch(0.95 0.02 245);
+    --cat-1: oklch(0.62 0.13 320);
+    --cat-2: oklch(0.55 0.14 240);
+    --cat-3: oklch(0.62 0.10 195);
+    --cat-4: oklch(0.60 0.04 80);
+    --radius: 14px;
+    --radius-lg: 18px;
+    --radius-sm: 10px;
+    --shadow: 0 1px 0 oklch(0.96 0.004 80), 0 10px 28px -22px oklch(0.30 0.04 250 / 0.18);
+  }
+  .dark {
+    --bg: #0b0f1a;
+    --bg-2: #131a28;
+    --surface: rgba(22, 30, 46, 0.6);
+    --ink: oklch(0.95 0.01 250);
+    --ink-soft: oklch(0.78 0.01 250);
+    --ink-mute: oklch(0.60 0.01 250);
+    --border: rgba(148,163,184,0.10);
+    --border-strong: rgba(148,163,184,0.18);
+  }
+
   * { -webkit-tap-highlight-color: transparent; }
   html, body {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    font-feature-settings: 'cv11', 'ss01', 'ss03';
+    font-family: 'Geist', 'Inter', system-ui, -apple-system, sans-serif;
+    font-feature-settings: 'ss01', 'ss02', 'cv11';
   }
+  .num, .amount { font-variant-numeric: tabular-nums; }
   body {
     -webkit-user-select: none;
     -webkit-touch-callout: none;
@@ -171,9 +213,205 @@
   /* Hide scrollbar but allow scroll */
   .scrollbar-hide::-webkit-scrollbar { display: none; }
   .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* ============================================================
+     DASHBOARD — editorial design (Geist, oklch, ink-blue accent)
+     ============================================================ */
+  body.editorial { background: var(--bg); color: var(--ink); }
+  .editorial-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    position: relative;
+  }
+  .dark .editorial-card { background: rgba(22, 30, 46, 0.6); }
+
+  .eyebrow {
+    font-size: 10.5px; letter-spacing: 0.10em;
+    text-transform: uppercase; color: var(--ink-mute);
+    font-weight: 500; white-space: nowrap;
+  }
+  .card-title-ed { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; margin: 0; color: var(--ink); }
+  .link-more {
+    color: var(--ink-mute); text-decoration: none;
+    font-size: 12.5px; font-weight: 500;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .link-more:hover { color: var(--ink); }
+
+  /* KPI hero — solde courant (dark fill) */
+  .kpi-hero-ed {
+    background: var(--ink); color: #fff;
+    border: 1px solid var(--ink);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px 16px;
+    position: relative; overflow: hidden;
+  }
+  .kpi-hero-ed::after {
+    content: ""; position: absolute;
+    right: -40px; top: -40px;
+    width: 180px; height: 180px;
+    border-radius: 50%;
+    border: 1px solid #ffffff14;
+    box-shadow:
+      0 0 0 12px transparent, 0 0 0 13px #ffffff10,
+      0 0 0 28px transparent, 0 0 0 29px #ffffff0c,
+      0 0 0 50px transparent, 0 0 0 51px #ffffff08;
+    pointer-events: none;
+  }
+  .kpi-hero-ed .label { font-size: 10.5px; letter-spacing: 0.10em; text-transform: uppercase; color: #ffffffaa; font-weight: 500; }
+  .kpi-hero-ed .val { font-size: 34px; font-weight: 600; letter-spacing: -0.025em; margin: 14px 0 16px; }
+  .kpi-hero-ed .val .cur { color: #ffffffaa; font-weight: 500; margin-left: 4px; }
+  .kpi-hero-ed .ctas { display: flex; gap: 8px; position: relative; z-index: 1; }
+  .btn-ed {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    border-radius: 10px; padding: 9px 12px;
+    font-size: 13px; font-weight: 500;
+    cursor: pointer; border: 1px solid transparent;
+    font-family: inherit; white-space: nowrap;
+    transition: background .15s, border-color .15s;
+  }
+  .btn-light-ed { background: #ffffff18; color: #fff; border: 1px solid #ffffff20; flex: 1; }
+  .btn-light-ed:hover { background: #ffffff26; }
+  .btn-bright-ed { background: #fff; color: var(--ink); flex: 1; }
+  .btn-primary-ed { background: var(--ink); color: #fff; }
+  .btn-primary-ed:hover { background: oklch(0.30 0.02 250); }
+  .btn-ghost-ed { background: var(--bg-2); border: 1px solid var(--border); color: var(--ink); }
+  .btn-ghost-ed:hover { background: oklch(0.94 0.005 80); }
+
+  /* Calendar ribbon (Avant salaire) */
+  .ribbon {
+    display: grid; grid-template-columns: repeat(30, 1fr);
+    gap: 3px; margin-bottom: 14px;
+  }
+  .ribbon i {
+    height: 10px; border-radius: 2px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    display: block;
+  }
+  .ribbon i.past { background: var(--bg-2); border-color: var(--border); }
+  .ribbon i.today { background: var(--ink); border-color: var(--ink); }
+  .ribbon i.future { background: var(--surface); border-color: var(--border); }
+
+  .pill-pos {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--positive-soft); color: var(--positive);
+    font-size: 11px; font-weight: 600;
+    padding: 3px 7px; border-radius: 999px;
+  }
+  .pill-neg {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--negative-soft); color: var(--negative);
+    font-size: 11px; font-weight: 600;
+    padding: 3px 7px; border-radius: 999px;
+  }
+  .pulse-tag {
+    background: var(--bg-2); border: 1px solid var(--border);
+    color: var(--ink-soft);
+    font-size: 11px; font-weight: 500;
+    padding: 4px 8px; border-radius: 999px;
+    display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+  }
+  .pulse-tag .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--positive);
+    box-shadow: 0 0 0 4px oklch(0.55 0.12 155 / 0.15);
+  }
+
+  /* Budget item */
+  .budget-item-ed {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 14px 16px;
+    background: var(--surface);
+    position: relative;
+    text-align: left;
+    width: 100%;
+  }
+  .dark .budget-item-ed { background: rgba(22, 30, 46, 0.4); }
+  .budget-item-ed.over { border-color: oklch(0.86 0.04 25); }
+  .budget-item-ed:hover { border-color: var(--border-strong); }
+  .cat-icon-ed {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: var(--bg-2);
+    display: grid; place-items: center;
+    color: var(--ink);
+    position: relative;
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+    font-size: 17px;
+  }
+  .cat-icon-ed .dot {
+    position: absolute;
+    bottom: -2px; right: -2px;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--surface);
+    background: var(--cat-1);
+  }
+  .progress-ed {
+    margin-top: 14px; height: 6px;
+    background: var(--bg-2);
+    border-radius: 99px; overflow: hidden;
+  }
+  .progress-ed > i {
+    display: block; height: 100%;
+    border-radius: 99px;
+    background: var(--ink);
+  }
+  .progress-ed.over > i { background: var(--negative); }
+  .progress-ed.ok > i { background: var(--positive); }
+
+  /* Charges segmented strip */
+  .charges-seg { display: flex; gap: 3px; margin: 14px 0; }
+  .charges-seg i {
+    flex: 1; height: 8px; border-radius: 3px;
+    background: var(--bg-2); border: 1px solid var(--border);
+    display: block;
+  }
+  .charges-seg i.paid {
+    background: var(--positive); border-color: var(--positive);
+  }
+  .check-ed {
+    width: 18px; height: 18px;
+    border-radius: 6px;
+    border: 1.5px solid var(--border-strong);
+    display: grid; place-items: center;
+    flex-shrink: 0;
+    background: var(--surface); color: transparent;
+    cursor: pointer;
+  }
+  .check-ed.on { background: var(--positive); border-color: var(--positive); color: #fff; }
+
+  /* Dashed top divider on chart card */
+  .editorial-card.chart-card-ed::before {
+    content: ""; position: absolute;
+    left: 22px; right: 22px; top: 0; height: 1px;
+    background-image: linear-gradient(to right, var(--border-strong) 50%, transparent 50%);
+    background-size: 6px 1px;
+  }
+
+  /* Tx row */
+  .tx-row {
+    display: grid; grid-template-columns: 36px 1fr auto;
+    gap: 12px; align-items: center;
+    padding: 11px 0;
+    border-top: 1px solid var(--border);
+  }
+  .tx-row:first-child { border-top: none; }
+  .tx-ic {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: var(--bg-2); color: var(--ink);
+    display: grid; place-items: center;
+    font-size: 17px; border: 1px solid var(--border);
+    flex-shrink: 0;
+  }
 </style>
 </head>
-<body class="bg-slate-50 dark:bg-[#0b0f1a] text-slate-900 dark:text-slate-100">
+<body class="editorial bg-[var(--bg)] dark:bg-[#0b0f1a] text-[var(--ink)] dark:text-slate-100">
 <div id="root"></div>
 
 <script type="text/babel">
@@ -286,7 +524,7 @@ const EMOJI_KEYWORDS = {
 /* Simple rule-based AI analysis of expenses — returns health score + insights */
 const analyzeBudget = ({ depenses, monthlyTotals, categories, resteAVivre, totalDepense, salaryDay = 24 }) => {
   const now = new Date();
-  const currPeriod = spk(now, salaryDay);
+  const currPeriod = mk(now);
   const insights = [];
   let score = 100;
 
@@ -306,8 +544,8 @@ const analyzeBudget = ({ depenses, monthlyTotals, categories, resteAVivre, total
     }
   });
 
-  // Current salary-period transactions
-  const monthDeps = depenses.filter(d => spk(new Date(d.date), salaryDay) === currPeriod);
+  // Current calendar-month transactions
+  const monthDeps = depenses.filter(d => mk(new Date(d.date)) === currPeriod);
 
   // 2. Delivery orders pattern (Uber Eats, Deliveroo, etc.)
   const delivPat = /uber.?eat|deliveroo|just.?eat|frichti|tiptoque|livraison|lieferando|foodora|wolt|glovo/i;
@@ -573,6 +811,29 @@ const EmojiPicker = ({ value, onChange, compact = false }) => {
   );
 };
 
+/* Inline pay-row for "charges du jour" — editable amount before validation */
+const ChargePayRow = ({ charge, daysLate, onValidate }) => {
+  const [amount, setAmount] = useState(String(charge.montant ?? '').replace('.', ','));
+  return (
+    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 text-sm font-semibold">
+      <span className="truncate max-w-[140px]">{charge.nom}</span>
+      <input
+        type="number" step="0.01" inputMode="decimal"
+        value={amount} onChange={(e) => setAmount(e.target.value)}
+        onClick={(e) => e.target.select()}
+        className="w-20 px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-700/60 text-right outline-none focus:ring-2 focus:ring-violet-500 text-xs"
+      />
+      <span className="text-slate-500 text-xs">€</span>
+      {daysLate > 0 && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-500">+{daysLate}j</span>}
+      <button type="button" onClick={() => onValidate(amount)}
+              className="ml-1 flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-500 hover:bg-emerald-600 text-white text-xs btn-tap">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Valider
+      </button>
+    </div>
+  );
+};
+
 const Ring = ({ value, max, size = 72, stroke = 6, color = '#8b5cf6' }) => {
   const pct = Math.max(0, Math.min(100, (value / max) * 100));
   const r = (size - stroke) / 2;
@@ -607,7 +868,7 @@ const App = () => {
   const [chargesPayees, setChargesPayees] = useState({});
   const [objectifs, setObjectifs] = useState([]);
   const [abos, setAbos] = useState([]);
-  const [darkMode, setDarkMode] = useState(true); // default dark pour desktop
+  const [darkMode, setDarkMode] = useState(false); // default light (editorial design)
   const [hideBalances, setHideBalances] = useState(false);
   const [investUpdates, setInvestUpdates] = useState({ pea: null, crypto: null });
   const [investTotal, setInvestTotal] = useState({ pea: null, crypto: null });
@@ -662,25 +923,7 @@ const App = () => {
       setDepenses(d.depenses || []);
       setStatsArch(d.statsArchivees || {});
       setChargesFixes(d.chargesFixesAuto || []);
-      // One-time migration: clear current period's chargesPayees because the
-      // previous mk-based code wrote under the same key as the new spk period,
-      // so existing checkmarks need a hard reset on first launch of new model.
-      let cp = d.chargesPayees || {};
-      const migKey = 'migrate_spk_charges_v1';
-      if (!localStorage.getItem(migKey)) {
-        const sd = d.monthlyBudget?.jourPaiementSalaire || 24;
-        const currPeriod = spk(new Date(), sd);
-        if (cp[currPeriod] && Object.keys(cp[currPeriod]).length > 0) {
-          cp = { ...cp };
-          delete cp[currPeriod];
-          // Persist directly to avoid race with initialRef-gated save effect
-          db.collection('users').doc(user.uid).collection('data').doc('budget')
-            .set({ chargesPayees: cp, lastUpdate: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true })
-            .catch(() => {});
-        }
-        localStorage.setItem(migKey, '1');
-      }
-      setChargesPayees(cp);
+      setChargesPayees(d.chargesPayees || {});
       setObjectifs(d.objectifs || []);
       setAbos(d.abonnements || []);
       if (d.darkMode !== undefined) setDarkMode(d.darkMode);
@@ -732,30 +975,29 @@ const App = () => {
     if (meta) meta.content = darkMode ? '#0b0f1a' : '#f7f8fc';
   }, [darkMode]);
 
-  /* ---- Archive on salary-period change ---- */
+  /* ---- Archive on calendar-month change ---- */
   useEffect(() => {
     const check = () => {
       const now = new Date();
-      const sd = budget.jourPaiementSalaire || 24;
-      const curr = spk(now, sd);
-      const last = localStorage.getItem('lastPeriodChecked');
+      const curr = mk(now);
+      const last = localStorage.getItem('lastMonthChecked');
       if (last && last !== curr) {
         const [ly, lm] = last.split('-').map(Number);
         const t = {};
         Object.keys(budget.categories).forEach(k => t[k] = 0);
         t.exceptionnel = 0; t.depense = 0;
         depenses.forEach(d => {
-          if (spk(new Date(d.date), sd) === last) t[d.categorie] = (t[d.categorie] || 0) + pa(d.montant);
+          if (mk(new Date(d.date)) === last) t[d.categorie] = (t[d.categorie] || 0) + pa(d.montant);
         });
         const total = Object.values(t).reduce((s, v) => s + v, 0);
-        setStatsArch(p => ({ ...p, [last]: { depenses: t, total, date: new Date(ly, lm, sd) } }));
+        setStatsArch(p => ({ ...p, [last]: { depenses: t, total, date: new Date(ly, lm, 1) } }));
       }
-      localStorage.setItem('lastPeriodChecked', curr);
+      localStorage.setItem('lastMonthChecked', curr);
     };
     check();
     const i = setInterval(check, 3600000);
     return () => clearInterval(i);
-  }, [depenses, budget.categories, budget.jourPaiementSalaire]);
+  }, [depenses, budget.categories]);
 
   /* ---- Auto-process subscriptions ---- */
   useEffect(() => {
@@ -792,21 +1034,39 @@ const App = () => {
 
   /* ---- Derived ---- */
   const salaryDay = budget.jourPaiementSalaire || 24;
-  const currSPK = spk(new Date(), salaryDay);
+  const currMK = mk(new Date());
+  /* Charges-period anchor: ISO date of the last Salaire revenu (fallback: most recent jourPaiementSalaire occurrence) */
+  const salaryAnchorDate = useMemo(() => {
+    if (budget.lastSalaireDate) return new Date(budget.lastSalaireDate);
+    const sd = budget.jourPaiementSalaire || 24;
+    const today = new Date();
+    let d = new Date(today.getFullYear(), today.getMonth(), sd);
+    if (d > today) d = new Date(today.getFullYear(), today.getMonth() - 1, sd);
+    return d;
+  }, [budget.lastSalaireDate, budget.jourPaiementSalaire]);
+  const chargesPeriodKey = useMemo(() => {
+    const d = salaryAnchorDate;
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }, [salaryAnchorDate]);
+  const anchorSalaryDay = salaryAnchorDate.getDate();
 
+  /* Monthly totals: calendar month (auto-reset day 1) */
   const monthlyTotals = useMemo(() => {
     const t = {};
     Object.keys(budget.categories).forEach(k => t[k] = 0);
     t.exceptionnel = 0; t.depense = 0;
     depenses.forEach(d => {
-      if (spk(new Date(d.date), salaryDay) === currSPK) t[d.categorie] = (t[d.categorie] || 0) + pa(d.montant);
+      if (mk(new Date(d.date)) === currMK) t[d.categorie] = (t[d.categorie] || 0) + pa(d.montant);
     });
     return t;
-  }, [depenses, budget.categories, currSPK, salaryDay]);
+  }, [depenses, budget.categories, currMK]);
 
   const totalDepense = useMemo(() => Object.values(monthlyTotals).reduce((s, v) => s + v, 0), [monthlyTotals]);
-  const chargesPayeesM = useMemo(() => chargesFixes.filter(c => chargesPayees[currSPK]?.[c.id]).reduce((s, c) => s + pa(c.montant), 0), [chargesFixes, chargesPayees, currSPK]);
-  const chargesNonPayeesM = useMemo(() => chargesFixes.filter(c => !chargesPayees[currSPK]?.[c.id]).reduce((s, c) => s + pa(c.montant), 0), [chargesFixes, chargesPayees, currSPK]);
+  const chargesPayeesM = useMemo(() => chargesFixes.filter(c => chargesPayees[chargesPeriodKey]?.[c.id]).reduce((s, c) => s + pa(c.montant), 0), [chargesFixes, chargesPayees, chargesPeriodKey]);
+  /* "Charges restantes" = scheduled after the salary anchor and not yet paid (i.e. coming in the days after salary was added) */
+  const chargesNonPayeesM = useMemo(() => chargesFixes
+    .filter(c => !chargesPayees[chargesPeriodKey]?.[c.id])
+    .reduce((s, c) => s + pa(c.montant), 0), [chargesFixes, chargesPayees, chargesPeriodKey]);
   const totalChargesF = budget.chargesfixes + chargesPayeesM + chargesNonPayeesM;
   const resteAVivre = budget.revenus - totalChargesF;
 
@@ -815,13 +1075,14 @@ const App = () => {
     solde: soldeCompte - chargesNonPayeesM
   }), [chargesNonPayeesM, soldeCompte]);
 
+  /* Notifs = charges due (scheduled day has been reached since salary anchor) and not yet paid */
   const notifs = useMemo(() => {
     const today = new Date().getDate();
-    const todayPos = dayPos(today, salaryDay);
+    const todayPos = dayPos(today, anchorSalaryDay);
     return chargesFixes
-      .filter(c => !chargesPayees[currSPK]?.[c.id] && dayPos(c.jourPaiement, salaryDay) <= todayPos)
-      .map(c => ({ ...c, daysLate: todayPos - dayPos(c.jourPaiement, salaryDay) }));
-  }, [chargesFixes, chargesPayees, currSPK, salaryDay]);
+      .filter(c => !chargesPayees[chargesPeriodKey]?.[c.id] && dayPos(c.jourPaiement, anchorSalaryDay) <= todayPos)
+      .map(c => ({ ...c, daysLate: todayPos - dayPos(c.jourPaiement, anchorSalaryDay) }));
+  }, [chargesFixes, chargesPayees, chargesPeriodKey, anchorSalaryDay]);
 
   const budgetHealth = useMemo(() => analyzeBudget({
     depenses, monthlyTotals, categories: budget.categories, resteAVivre, totalDepense, salaryDay
@@ -872,20 +1133,48 @@ const App = () => {
     setModal('charges');
     toast('Charge ajoutée', 'success');
   };
-  const toggleCharge = (id) => {
+  /* Pay/unpay a charge — updates amount if changed, toggles paid state, mirrors a depense entry in history */
+  const toggleCharge = (id, overrideAmount = null) => {
     const c = chargesFixes.find(x => x.id === id);
     if (!c) return;
-    const was = chargesPayees[currSPK]?.[id];
-    setChargesPayees(p => ({ ...p, [currSPK]: { ...(p[currSPK] || {}), [id]: !was } }));
-    setSoldeCompte(s => was ? s + pa(c.montant) : s - pa(c.montant));
+    const was = chargesPayees[chargesPeriodKey]?.[id];
+    const m = overrideAmount != null ? pa(overrideAmount) : pa(c.montant);
+    if (!was && overrideAmount != null && m !== pa(c.montant)) {
+      setChargesFixes(p => p.map(x => x.id === id ? { ...x, montant: m } : x));
+    }
+    setChargesPayees(p => ({ ...p, [chargesPeriodKey]: { ...(p[chargesPeriodKey] || {}), [id]: !was } }));
+    if (was) {
+      setSoldeCompte(s => s + pa(c.montant));
+      setDepenses(p => p.filter(d => !(d.chargeId === id && d.chargePeriod === chargesPeriodKey)));
+    } else {
+      setSoldeCompte(s => s - m);
+      setDepenses(p => [{
+        id: Date.now() + Math.random(),
+        categorie: 'depense',
+        montant: m,
+        description: `🔁 ${c.nom}`,
+        emoji: '🔁',
+        date: new Date().toISOString().split('T')[0],
+        deduireDuSolde: false,
+        chargeId: id,
+        chargePeriod: chargesPeriodKey,
+      }, ...p]);
+    }
   };
   const addRevenu = (e) => {
     e?.preventDefault();
     if (!newRevenu.montant) return;
     setSoldeCompte(s => s + pa(newRevenu.montant));
+    if (newRevenu.type === 'Salaire') {
+      const today = new Date().toISOString().split('T')[0];
+      /* Setting lastSalaireDate rotates the chargesPeriodKey, so all charges become unchecked for the new period */
+      setBudget(b => ({ ...b, lastSalaireDate: today }));
+      toast('Salaire ajouté — charges réinitialisées', 'success');
+    } else {
+      toast('Revenu ajouté', 'success');
+    }
     setNewRevenu({ type: 'Salaire', montant: '' });
     setModal(null);
-    toast('Revenu ajouté', 'success');
   };
   const addGoal = (e) => {
     e?.preventDefault();
@@ -1016,136 +1305,184 @@ const App = () => {
       const now = new Date();
       for (let i = 5; i >= 0; i--) {
         const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        const k = `${d.getFullYear()}-${d.getMonth()}`;
+        const y = d.getFullYear(), m = d.getMonth();
         let total = 0;
-        if (k === currSPK) total = totalDepense;
-        else if (statsArch[k]) total = statsArch[k].total || 0;
-        else {
-          depenses.forEach(dep => {
-            if (spk(new Date(dep.date), salaryDay) === k) total += pa(dep.montant);
-          });
-        }
+        depenses.forEach(dep => {
+          const dd = new Date(dep.date);
+          if (dd.getFullYear() === y && dd.getMonth() === m) total += pa(dep.montant);
+        });
         months.push({ label: d.toLocaleDateString('fr-FR', { month: 'short' }), total });
       }
       return months;
-    }, [depenses, statsArch, totalDepense]);
+    }, [depenses]);
+
+    /* Bars + dashed 3-month rolling-average trend, ink-blue editorial palette */
+    const rollingAvg = useMemo(() => trendData.map((_, i) => {
+      const slice = trendData.slice(Math.max(0, i - 2), i + 1);
+      return slice.reduce((s, x) => s + x.total, 0) / slice.length;
+    }), [trendData]);
+    const avgTotal = useMemo(() => trendData.reduce((s, x) => s + x.total, 0) / Math.max(1, trendData.length), [trendData]);
 
     useEffect(() => {
       if (!chartRef.current) return;
       if (chartInst.current) chartInst.current.destroy();
       const ctx = chartRef.current.getContext('2d');
-      const g = ctx.createLinearGradient(0, 0, 0, 200);
-      g.addColorStop(0, 'rgba(139,92,246,0.4)');
-      g.addColorStop(1, 'rgba(139,92,246,0)');
+      const inkColor = darkMode ? '#e2e8f0' : 'oklch(0.22 0.02 250)';
+      const accentColor = darkMode ? '#94a3b8' : 'oklch(0.30 0.07 245)';
+      const gridColor = darkMode ? 'rgba(148,163,184,.08)' : 'oklch(0.93 0.004 80)';
+      const tickColor = darkMode ? '#94a3b8' : 'oklch(0.60 0.01 250)';
       chartInst.current = new Chart(ctx, {
-        type: 'line',
+        type: 'bar',
         data: {
           labels: trendData.map(d => d.label),
-          datasets: [{
-            data: trendData.map(d => d.total),
-            borderColor: '#8b5cf6', backgroundColor: g, fill: true, tension: 0.4,
-            borderWidth: 3, pointRadius: 5, pointHoverRadius: 7, pointBackgroundColor: '#fff',
-            pointBorderWidth: 3, pointBorderColor: '#8b5cf6',
-          }]
+          datasets: [
+            {
+              type: 'bar',
+              label: 'Dépenses',
+              data: trendData.map(d => d.total),
+              backgroundColor: inkColor,
+              borderRadius: 4,
+              barThickness: 32,
+            },
+            {
+              type: 'line',
+              label: 'Tendance 3 mois',
+              data: rollingAvg,
+              borderColor: accentColor,
+              borderDash: [4, 4],
+              borderWidth: 1.6,
+              pointRadius: 2.5,
+              pointBackgroundColor: accentColor,
+              pointBorderColor: accentColor,
+              tension: 0,
+              fill: false,
+            }
+          ]
         },
         options: {
           responsive: true, maintainAspectRatio: false,
-          plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => fm(c.parsed.y) } } },
+          plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${fm(c.parsed.y)}` } } },
           scales: {
-            y: { beginAtZero: true, grid: { color: darkMode ? 'rgba(148,163,184,.08)' : 'rgba(148,163,184,.15)' }, ticks: { color: darkMode ? '#64748b' : '#64748b', callback: v => fm(v, { compact: true }) } },
-            x: { grid: { display: false }, ticks: { color: darkMode ? '#64748b' : '#64748b' } }
+            y: { beginAtZero: true, grid: { color: gridColor, drawBorder: false }, ticks: { color: tickColor, font: { family: 'Geist Mono, ui-monospace', size: 11 }, callback: v => fm(v, { compact: true }) } },
+            x: { grid: { display: false }, ticks: { color: tickColor, font: { family: 'Geist, sans-serif', size: 11.5 } } }
           }
         }
       });
       return () => chartInst.current?.destroy();
-    }, [trendData, darkMode]);
+    }, [trendData, rollingAvg, darkMode]);
+
+    /* Avant-salaire calendar ribbon: 30 days starting at salaryAnchorDate */
+    const ribbon = useMemo(() => {
+      const days = [];
+      const today = new Date(); today.setHours(0,0,0,0);
+      const anchor = new Date(salaryAnchorDate); anchor.setHours(0,0,0,0);
+      const elapsed = Math.max(0, Math.floor((today - anchor) / 86400000));
+      for (let i = 0; i < 30; i++) {
+        if (i < elapsed) days.push('past');
+        else if (i === elapsed) days.push('today');
+        else days.push('future');
+      }
+      return { days, elapsed };
+    }, [salaryAnchorDate]);
+    const daysToSalary = Math.max(0, 30 - ribbon.elapsed);
+
+    /* Trend pill on chart */
+    const trendDelta = useMemo(() => {
+      if (trendData.length < 2) return null;
+      const last = trendData[trendData.length - 1].total;
+      const prev = trendData[trendData.length - 2].total;
+      if (!prev) return null;
+      return ((last - prev) / prev) * 100;
+    }, [trendData]);
 
     return (
-      <div className="space-y-6 animate-fade-in">
-        {/* Top stats row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="card p-6 relative overflow-hidden bg-gradient-to-br from-violet-600 via-indigo-600 to-fuchsia-600 text-white border-0">
-            <div className="absolute -right-10 -top-10 w-40 h-40 rounded-full bg-white/10 blur-3xl"></div>
-            <div className="relative">
-              <div className="flex items-center justify-between mb-3">
-                <div className="text-xs font-semibold uppercase tracking-wider opacity-80">Solde courant</div>
-                <button onClick={() => setHideBalances(!hideBalances)} className="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center btn-tap">
-                  {hideBalances ? <I.EyeOff s={14} /> : <I.Eye s={14} />}
-                </button>
-              </div>
-              <div className="font-display font-black text-3xl lg:text-4xl mb-1"><Amount v={soldeCompte} /></div>
-              <div className="flex gap-2 mt-4">
-                <button onClick={() => {
-                          const v = prompt('Nouveau solde :', soldeCompte.toFixed(2));
-                          if (v !== null) { const n = parseFloat(v.replace(',','.')); if (!isNaN(n)) setSoldeCompte(n); }
-                        }}
-                        className="flex-1 text-xs font-semibold px-3 py-1.5 rounded-lg bg-white/20 hover:bg-white/30 btn-tap">Modifier</button>
-                <button onClick={() => setModal('revenu')} className="flex-1 flex items-center justify-center gap-1 text-xs font-bold px-3 py-1.5 rounded-lg bg-white text-violet-700 hover:bg-white/95 btn-tap">
-                  <I.Plus s={12} sw={3}/> Revenu
-                </button>
-              </div>
+      <div className="space-y-5 animate-fade-in">
+        {/* ========== KPI ROW ========== */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[18px]">
+          {/* Hero solde — dark fill with topographic decoration */}
+          <div className="kpi-hero-ed">
+            <div className="flex items-center justify-between">
+              <div className="label">Solde courant</div>
+            </div>
+            <div className="val num"><Amount v={soldeCompte} /></div>
+            <div className="ctas">
+              <button type="button"
+                      onClick={() => {
+                        const v = prompt('Nouveau solde :', soldeCompte.toFixed(2));
+                        if (v !== null) { const n = parseFloat(v.replace(',','.')); if (!isNaN(n)) setSoldeCompte(n); }
+                      }}
+                      className="btn-ed btn-light-ed">Modifier</button>
+              <button type="button" onClick={() => setModal('revenu')} className="btn-ed btn-bright-ed">
+                <I.Plus s={13} sw={2}/> Revenu
+              </button>
             </div>
           </div>
 
-          <div className="card p-6">
-            <div className="flex items-center justify-between mb-3">
-              <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">Avant salaire</div>
-              <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-500 flex items-center justify-center"><I.Calendar s={14} /></div>
+          {/* Avant salaire — calendar ribbon */}
+          <div className="editorial-card">
+            <div className="flex items-start justify-between mb-2.5">
+              <div className="eyebrow">Avant salaire</div>
+              <div className="text-[11px] num text-[var(--ink-mute)] whitespace-nowrap">J−{daysToSalary}</div>
             </div>
-            <div className={`font-display font-black text-3xl mb-1 ${soldePrev.solde < 0 ? 'text-rose-500' : ''}`}><Amount v={soldePrev.solde} /></div>
-            {soldePrev.restantes > 0 ? (
-              <div className="text-xs text-slate-500">−{fm(soldePrev.restantes)} charges restantes</div>
-            ) : (
-              <div className="text-xs text-emerald-500">Aucune charge en attente</div>
-            )}
+            <div className="ribbon">
+              {ribbon.days.map((cls, i) => <i key={i} className={cls}></i>)}
+            </div>
+            <div className={`text-[30px] leading-none font-semibold tracking-tight num ${soldePrev.solde < 0 ? 'text-[var(--negative)]' : ''}`}>
+              <Amount v={soldePrev.solde} />
+            </div>
+            <div className="text-[12.5px] text-[var(--ink-soft)] mt-1.5">
+              {soldePrev.restantes > 0 ? (
+                <><b className="text-[var(--negative)] font-medium">−{fm(soldePrev.restantes)}</b> de charges restantes</>
+              ) : 'Aucune charge en attente'}
+            </div>
           </div>
 
-          <div className="card p-6">
-            <div className="flex items-center justify-between mb-3">
-              <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">Patrimoine total</div>
-              <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-500 flex items-center justify-center"><I.TrendUp s={14} /></div>
+          {/* Patrimoine total */}
+          <div className="editorial-card">
+            <div className="flex items-start justify-between mb-2.5">
+              <div className="eyebrow">Patrimoine total</div>
+              <I.TrendUp s={14} cn="text-[var(--ink-mute)]" />
             </div>
-            <div className="font-display font-black text-3xl mb-1"><Amount v={totalPatrimoine} compact /></div>
-            <div className="text-xs text-slate-500">Compte + PEA + Crypto + Épargne</div>
+            <div className="text-[30px] leading-none font-semibold tracking-tight num"><Amount v={totalPatrimoine} compact /></div>
+            <div className="text-[12.5px] text-[var(--ink-soft)] mt-1.5">Compte + PEA + Crypto + Épargne</div>
           </div>
 
-          <button onClick={() => setHealthDetailOpen(true)} className="card card-interactive p-6 text-left">
-            <div className="flex items-center justify-between mb-3">
-              <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">Santé budget IA</div>
-              <div className="w-8 h-8 rounded-lg bg-violet-500/20 text-violet-500 flex items-center justify-center"><I.Sparkles s={14} /></div>
+          {/* Santé budget */}
+          <button type="button" onClick={() => setHealthDetailOpen(true)} className="editorial-card text-left hover:border-[var(--border-strong)] transition">
+            <div className="flex items-start justify-between mb-3">
+              <div className="eyebrow">Santé du budget</div>
+              <span className="pulse-tag">
+                <span className="dot"></span>
+                {budgetHealth.insights.length} insight{budgetHealth.insights.length > 1 ? 's' : ''}
+              </span>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <Ring value={healthScore} max={100} size={56} stroke={6} color={healthScore > 75 ? '#10b981' : healthScore > 50 ? '#84cc16' : healthScore > 25 ? '#f59e0b' : '#ef4444'} />
-                <div className="absolute inset-0 flex items-center justify-center font-bold text-sm">{healthScore}</div>
+            <div className="grid grid-cols-[76px_1fr] gap-3.5 items-center">
+              <div className="relative w-[76px] h-[76px]">
+                <Ring value={healthScore} max={100} size={76} stroke={6}
+                      color={healthScore > 75 ? 'oklch(0.55 0.12 155)' : healthScore > 50 ? 'oklch(0.55 0.12 155)' : healthScore > 25 ? 'oklch(0.72 0.13 75)' : 'oklch(0.58 0.18 25)'} />
+                <div className="absolute inset-0 flex items-center justify-center text-[21px] font-semibold tracking-tight num">{healthScore}</div>
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-display font-bold text-lg">{budgetHealth.level}</div>
-                <div className="text-xs text-slate-500">{budgetHealth.insights.length} insight{budgetHealth.insights.length > 1 ? 's' : ''} · Voir détails →</div>
+              <div>
+                <div className="text-[22px] leading-none font-semibold tracking-tight">{budgetHealth.level}</div>
+                <div className="text-[12.5px] text-[var(--ink-soft)] mt-1">Voir <span className="font-medium text-[var(--ink)]">détails →</span></div>
               </div>
             </div>
           </button>
         </div>
 
-        {/* Notifs alert */}
+        {/* ========== Notifs alert ========== */}
         {notifs.length > 0 && (
-          <div className="card border-amber-300/50 dark:border-amber-900/50 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 p-5">
+          <div className="editorial-card" style={{ background: 'oklch(0.98 0.02 75)', borderColor: 'oklch(0.86 0.05 75)' }}>
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0"><I.Bell s={18} /></div>
+              <div className="w-9 h-9 rounded-[10px] bg-[var(--ink)] text-white flex items-center justify-center shrink-0"><I.Bell s={16} /></div>
               <div className="flex-1 min-w-0">
-                <div className="font-display font-bold text-slate-900 dark:text-white mb-1">{notifs.length} charge{notifs.length > 1 ? 's' : ''} en attente de paiement</div>
+                <div className="font-semibold text-[14px] mb-2">{notifs.length} charge{notifs.length > 1 ? 's' : ''} en attente de paiement</div>
                 <div className="flex flex-wrap gap-2">
                   {notifs.slice(0, 4).map(n => (
-                    <button key={n.id} onClick={() => toggleCharge(n.id)}
-                            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-sm font-semibold btn-tap">
-                      <I.Check s={14} className="text-emerald-500" />
-                      <span>{n.nom}</span>
-                      <span className="text-slate-500">{fm(n.montant)}</span>
-                      {n.daysLate > 0 && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-500">+{n.daysLate}j</span>}
-                    </button>
+                    <ChargePayRow key={n.id} charge={n} daysLate={n.daysLate} onValidate={(amt) => toggleCharge(n.id, amt)} />
                   ))}
                   {notifs.length > 4 && (
-                    <button onClick={() => setModal('charges')} className="px-3 py-1.5 rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 text-sm font-semibold btn-tap">
+                    <button onClick={() => setModal('charges')} className="px-3 py-1.5 rounded-lg bg-[var(--bg-2)] text-[var(--ink-soft)] text-sm font-medium btn-tap">
                       +{notifs.length - 4} autres
                     </button>
                   )}
@@ -1155,136 +1492,152 @@ const App = () => {
           </div>
         )}
 
-        {/* Main grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Categories */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="card p-6">
-              <div className="flex items-center justify-between mb-5">
-                <div>
-                  <h3 className="font-display font-bold text-xl">Budgets du mois</h3>
-                  <p className="text-xs text-slate-500 mt-0.5">{new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}</p>
-                </div>
-                <button onClick={() => setView('settings')} className="text-xs font-semibold text-violet-500 hover:text-violet-600">Gérer →</button>
+        {/* ========== Middle row: Budgets + Charges fixes ========== */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-[18px]">
+          {/* Budgets du mois — col-2 */}
+          <div className="editorial-card lg:col-span-2">
+            <div className="flex items-start justify-between mb-3.5">
+              <div>
+                <div className="eyebrow mb-0.5">{new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}</div>
+                <h2 className="card-title-ed">Budgets du mois</h2>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {cats.map(([k, c]) => {
-                  const d = monthlyTotals[k] || 0;
-                  const pct = c.budget > 0 ? (d / c.budget) * 100 : 0;
-                  const restant = c.budget - d;
-                  const exceeded = restant < 0;
+              <button onClick={() => setView('settings')} className="link-more">Gérer →</button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              {cats.map(([k, c]) => {
+                const d = monthlyTotals[k] || 0;
+                const pct = c.budget > 0 ? (d / c.budget) * 100 : 0;
+                const restant = c.budget - d;
+                const exceeded = restant < 0;
+                const ok = c.budget > 0 && pct >= 100 && !exceeded;
+                return (
+                  <button key={k} onClick={() => setModal({ type: 'catDetail', key: k })}
+                          className={`budget-item-ed ${exceeded ? 'over' : ''}`}>
+                    <div className="flex items-center gap-3 justify-between">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="cat-icon-ed">
+                          <span style={{ fontSize: 17 }}>{c.icon}</span>
+                          <span className="dot" style={{ background: c.color }}></span>
+                        </div>
+                        <div className="min-w-0">
+                          <div className="font-semibold text-[14.5px] tracking-[-0.005em] truncate">{c.nom}</div>
+                          <div className="text-[12px] num text-[var(--ink-mute)] mt-0.5 whitespace-nowrap">{fm(d)} / {fm(c.budget)}</div>
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <div className={`font-semibold text-[14px] tracking-tight num whitespace-nowrap ${exceeded ? 'text-[var(--negative)]' : ''}`}>{exceeded ? '−' : ''}{fm(Math.abs(restant), { compact: true })}</div>
+                        <div className={`text-[10.5px] uppercase tracking-[0.08em] font-medium mt-0.5 whitespace-nowrap ${exceeded ? 'text-[var(--negative)]' : ok ? 'text-[var(--positive)]' : 'text-[var(--ink-mute)]'}`}>
+                          {exceeded ? 'Dépassé' : ok ? 'Atteint' : 'Restant'}
+                        </div>
+                      </div>
+                    </div>
+                    <div className={`progress-ed ${exceeded ? 'over' : ok ? 'ok' : ''}`}>
+                      <i style={{ width: `${Math.min(pct, 100)}%`, background: exceeded ? 'var(--negative)' : ok ? 'var(--positive)' : c.color }}></i>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Charges fixes — col-1 */}
+          {chargesFixes.length > 0 ? (
+            <div className="editorial-card">
+              <div className="flex items-start justify-between mb-3.5">
+                <div>
+                  <div className="eyebrow mb-0.5">Mensuelles</div>
+                  <h2 className="card-title-ed">Charges fixes</h2>
+                </div>
+                <button onClick={() => setModal('charges')} className="link-more">Tout voir →</button>
+              </div>
+              <div className="text-[30px] leading-none font-semibold tracking-tight num">
+                {fm(chargesFixes.reduce((s, c) => s + pa(c.montant), 0))}
+              </div>
+              <div className="text-[12.5px] text-[var(--ink-soft)] mt-1">
+                <b className="text-[var(--positive)] font-semibold">{chargesFixes.filter(c => chargesPayees[chargesPeriodKey]?.[c.id]).length}</b> sur {chargesFixes.length} prélèvements payés
+              </div>
+              <div className="charges-seg">
+                {chargesFixes.map(c => (
+                  <i key={c.id} className={chargesPayees[chargesPeriodKey]?.[c.id] ? 'paid' : ''}></i>
+                ))}
+              </div>
+              <ul className="list-none m-0 p-0 flex flex-col">
+                {[...chargesFixes].sort((a, b) => dayPos(a.jourPaiement, anchorSalaryDay) - dayPos(b.jourPaiement, anchorSalaryDay)).slice(0, 6).map((c, i) => {
+                  const paid = chargesPayees[chargesPeriodKey]?.[c.id];
                   return (
-                    <button key={k} onClick={() => setModal({ type: 'catDetail', key: k })}
-                            className="card card-interactive p-4 text-left">
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="relative shrink-0">
-                          <Ring value={Math.min(pct, 100)} max={100} size={44} stroke={5} color={c.color} />
-                          <div className="absolute inset-0 flex items-center justify-center text-base">{c.icon}</div>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-semibold truncate">{c.nom}</div>
-                          <div className="text-[11px] text-slate-500">{fm(d)} / {fm(c.budget)}</div>
-                        </div>
-                        <div className={`text-right ${exceeded ? 'text-rose-500' : ''}`}>
-                          <div className="font-display font-bold text-sm">{exceeded ? '-' : ''}{fm(Math.abs(restant), { compact: true })}</div>
-                          <div className="text-[10px] uppercase tracking-wider text-slate-500">{exceeded ? 'Dépassé' : 'Restant'}</div>
-                        </div>
-                      </div>
-                      <div className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                        <div className="h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(pct, 100)}%`, background: exceeded ? '#ef4444' : c.color }}></div>
-                      </div>
-                    </button>
+                    <li key={c.id} className={`flex items-center gap-3 py-2.5 text-[13.5px] ${i > 0 ? 'border-t border-dashed border-[var(--border)]' : ''} ${paid ? 'opacity-100' : ''}`}>
+                      <button type="button" onClick={() => toggleCharge(c.id)} className={`check-ed ${paid ? 'on' : ''}`}>
+                        {paid && <I.Check s={11} sw={3} />}
+                      </button>
+                      <span className={`flex-1 truncate ${paid ? 'line-through text-[var(--ink-mute)]' : ''}`}>{c.nom}</span>
+                      <span className={`num font-medium whitespace-nowrap ${paid ? 'text-[var(--ink-mute)]' : ''}`}>{fm(c.montant)}</span>
+                    </li>
                   );
                 })}
-              </div>
+              </ul>
             </div>
+          ) : (
+            <button onClick={() => setModal('newCharge')} className="editorial-card text-center hover:border-[var(--border-strong)] transition" style={{ borderStyle: 'dashed' }}>
+              <div className="text-3xl mb-2">🔁</div>
+              <div className="font-semibold">Ajouter une charge fixe</div>
+              <div className="text-xs text-[var(--ink-mute)] mt-1">Loyer, électricité, abonnements…</div>
+            </button>
+          )}
+        </div>
 
-            {/* Trend chart */}
-            <div className="card p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">6 derniers mois</div>
-                  <div className="font-display font-bold text-xl">Évolution des dépenses</div>
-                </div>
-                {trendData.length >= 2 && (() => {
-                  const last = trendData[trendData.length - 1].total;
-                  const prev = trendData[trendData.length - 2].total;
-                  const diff = prev ? ((last - prev) / prev) * 100 : 0;
-                  const up = diff > 0;
-                  return (
-                    <div className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold ${up ? 'bg-rose-500/10 text-rose-500' : 'bg-emerald-500/10 text-emerald-500'}`}>
-                      {up ? <I.TrendUp s={12} /> : <I.TrendDown s={12} />}
-                      {diff > 0 ? '+' : ''}{diff.toFixed(0)}%
-                    </div>
-                  );
-                })()}
+        {/* ========== Bottom row: Chart + Right column ========== */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-[18px]">
+          {/* Évolution chart */}
+          <div className="editorial-card chart-card-ed lg:col-span-2">
+            <div className="flex items-start justify-between mb-2">
+              <div>
+                <div className="eyebrow mb-0.5">6 derniers mois</div>
+                <h2 className="text-[18px] font-semibold tracking-[-0.015em] m-0 mt-0.5">Évolution des dépenses</h2>
               </div>
-              <div style={{ height: 220 }}><canvas ref={chartRef}></canvas></div>
+              {trendDelta != null && (
+                <span className={trendDelta > 0 ? 'pill-neg' : 'pill-pos'}>
+                  {trendDelta > 0 ? <I.TrendUp s={10} sw={2.5} /> : <I.TrendDown s={10} sw={2.5} />}
+                  {trendDelta > 0 ? '+' : ''}{trendDelta.toFixed(0)}%
+                </span>
+              )}
+            </div>
+            <div style={{ height: 240, marginTop: 14 }}><canvas ref={chartRef}></canvas></div>
+            <div className="flex gap-4 text-[12px] text-[var(--ink-mute)] mt-3 items-center">
+              <span className="inline-flex items-center gap-1.5"><i className="inline-block w-2.5 h-2.5 rounded-[3px] bg-[var(--ink)]"></i> Dépenses mensuelles</span>
+              <span className="inline-flex items-center gap-1.5"><i className="inline-block w-2.5 h-2.5 rounded-[3px]" style={{ background: 'var(--accent)' }}></i> Tendance 3 mois</span>
+              <span className="ml-auto num">Moyenne <b className="text-[var(--ink)] font-semibold">{fm(avgTotal)}</b></span>
             </div>
           </div>
 
           {/* Right column */}
-          <div className="space-y-6">
-            {/* Charges */}
-            {chargesFixes.length > 0 ? (
-              <div className="card p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-display font-bold text-lg">Charges fixes</h3>
-                  <button onClick={() => setModal('charges')} className="text-xs font-semibold text-violet-500 hover:text-violet-600">Tout voir →</button>
-                </div>
-                <div className="text-3xl font-display font-black mb-1">{fm(chargesFixes.reduce((s, c) => s + pa(c.montant), 0))}</div>
-                <div className="text-xs text-slate-500 mb-4">
-                  {chargesFixes.filter(c => chargesPayees[currSPK]?.[c.id]).length}/{chargesFixes.length} payées
-                </div>
-                <div className="h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden mb-4">
-                  <div className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-green-500 transition-all duration-500"
-                       style={{ width: `${(chargesFixes.filter(c => chargesPayees[currSPK]?.[c.id]).length / chargesFixes.length) * 100}%` }}></div>
-                </div>
-                <div className="space-y-1.5 max-h-64 overflow-y-auto scrollbar-hide">
-                  {[...chargesFixes].sort((a, b) => dayPos(a.jourPaiement, salaryDay) - dayPos(b.jourPaiement, salaryDay)).slice(0, 5).map(c => {
-                    const paid = chargesPayees[currSPK]?.[c.id];
-                    return (
-                      <div key={c.id} className="flex items-center gap-2">
-                        <button onClick={() => toggleCharge(c.id)}
-                                className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 ${paid ? 'bg-emerald-500 text-white' : 'border-2 border-slate-300 dark:border-slate-600'}`}>
-                          {paid && <I.Check s={12} sw={3} />}
-                        </button>
-                        <div className={`flex-1 min-w-0 text-sm ${paid ? 'line-through text-slate-500' : ''}`}>
-                          <span className="truncate">{c.nom}</span>
-                        </div>
-                        <div className={`text-xs font-semibold ${paid ? 'text-slate-500' : ''}`}>{fm(c.montant, { compact: true })}</div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ) : (
-              <button onClick={() => setModal('newCharge')} className="w-full card border-dashed p-6 text-center btn-tap hover:border-violet-400">
-                <div className="text-3xl mb-2">🔁</div>
-                <div className="font-semibold">Ajouter une charge fixe</div>
-                <div className="text-xs text-slate-500 mt-1">Loyer, électricité, abonnements…</div>
-              </button>
-            )}
-
-            {/* Goals preview */}
+          <div className="flex flex-col gap-[18px]">
+            {/* Objectifs */}
             {objectifs.length > 0 && (
-              <div className="card p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-display font-bold text-lg">Objectifs</h3>
-                  <button onClick={() => setView('goals')} className="text-xs font-semibold text-violet-500 hover:text-violet-600">Tout voir →</button>
+              <div className="editorial-card">
+                <div className="flex items-start justify-between mb-2.5">
+                  <div>
+                    <div className="eyebrow mb-0.5">En cours</div>
+                    <h2 className="card-title-ed">Objectifs</h2>
+                  </div>
+                  <button onClick={() => setView('goals')} className="link-more">Tout voir →</button>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-3.5">
                   {objectifs.slice(0, 3).map(g => {
                     const pct = Math.min(100, (g.actuel / g.cible) * 100);
                     return (
                       <div key={g.id}>
-                        <div className="flex items-center gap-2 mb-1.5">
-                          <span className="text-lg">{g.emoji}</span>
-                          <span className="flex-1 font-semibold text-sm truncate">{g.nom}</span>
-                          <span className="text-xs font-bold" style={{ color: g.color }}>{Math.round(pct)}%</span>
+                        <div className="grid grid-cols-[38px_1fr_auto] gap-3 items-center">
+                          <div className="w-[38px] h-[38px] rounded-[10px] grid place-items-center border" style={{ background: 'var(--accent-soft)', color: 'var(--accent)', borderColor: 'var(--border)' }}>
+                            <span style={{ fontSize: 17 }}>{g.emoji}</span>
+                          </div>
+                          <div>
+                            <div className="font-medium text-[14px]">{g.nom}</div>
+                            <div className="text-[11.5px] text-[var(--ink-mute)] num mt-0.5">{fm(g.actuel)} / {fm(g.cible)}</div>
+                          </div>
+                          <div className="font-semibold text-[14px] num">{Math.round(pct)}%</div>
                         </div>
-                        <div className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                          <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: g.color }}></div>
+                        <div className="mt-2.5 h-1.5 rounded-full bg-[var(--bg-2)] overflow-hidden">
+                          <div className="h-full rounded-full" style={{ width: `${pct}%`, background: 'linear-gradient(90deg, var(--accent), var(--accent-2))' }}></div>
                         </div>
                       </div>
                     );
@@ -1293,29 +1646,32 @@ const App = () => {
               </div>
             )}
 
-            {/* Recent transactions */}
-            <div className="card p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-display font-bold text-lg">Transactions récentes</h3>
-                <button onClick={() => setView('history')} className="text-xs font-semibold text-violet-500 hover:text-violet-600">Tout voir →</button>
+            {/* Transactions récentes */}
+            <div className="editorial-card">
+              <div className="flex items-start justify-between mb-1.5 pb-2 border-b border-[var(--border)]">
+                <div>
+                  <div className="eyebrow mb-0.5">Cette semaine</div>
+                  <h2 className="card-title-ed">Transactions récentes</h2>
+                </div>
+                <button onClick={() => setView('history')} className="link-more">Tout voir →</button>
               </div>
               {recentDepenses.length === 0 ? (
-                <div className="py-6 text-center text-sm text-slate-500">Aucune transaction</div>
+                <div className="py-6 text-center text-sm text-[var(--ink-mute)]">Aucune transaction</div>
               ) : (
-                <div className="space-y-2">
+                <div className="flex flex-col">
                   {recentDepenses.map(d => {
                     const c = d.categorie === 'exceptionnel' ? { nom: 'Exceptionnel', color: '#ef4444', icon: '⚠️' }
                       : d.categorie === 'depense' ? { nom: 'Autre', color: '#6b7280', icon: '💸' }
                       : budget.categories[d.categorie] || { nom: d.categorie, color: '#6b7280', icon: '📊' };
                     const displayIcon = d.emoji || c.icon;
                     return (
-                      <div key={d.id} className="flex items-center gap-3 py-2">
-                        <div className="w-9 h-9 rounded-xl flex items-center justify-center text-base shrink-0" style={{ backgroundColor: c.color + '22' }}>{displayIcon}</div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-semibold text-sm truncate">{d.description || c.nom}</div>
-                          <div className="text-[11px] text-slate-500">{dateLab(d.date)}</div>
+                      <div key={d.id} className="tx-row">
+                        <div className="tx-ic" style={{ background: c.color + '18', color: c.color, borderColor: c.color + '33' }}>{displayIcon}</div>
+                        <div className="min-w-0">
+                          <div className="font-medium text-[13.5px] truncate">{d.description || c.nom}</div>
+                          <div className="text-[11.5px] text-[var(--ink-mute)] mt-0.5">{dateLab(d.date)} · {c.nom}</div>
                         </div>
-                        <div className="font-display font-bold text-sm">-{fm(d.montant, { compact: true })}</div>
+                        <div className="num font-semibold text-[14px] whitespace-nowrap">−{fm(d.montant, { compact: true })}</div>
                       </div>
                     );
                   })}
@@ -1621,7 +1977,7 @@ const App = () => {
 
   /* ─────── STATS ─────── */
   const StatsView = () => {
-    const [selK, setSelK] = useState(currSPK);
+    const [selK, setSelK] = useState(currMK);
     const lineRef = useRef(null), lineI = useRef(null);
     const donutRef = useRef(null), donutI = useRef(null);
 
@@ -1630,31 +1986,35 @@ const App = () => {
       Object.keys(budget.categories).forEach(x => t[x] = 0);
       t.exceptionnel = 0; t.depense = 0;
       depenses.forEach(d => {
-        if (spk(new Date(d.date), salaryDay) === k) t[d.categorie] = (t[d.categorie] || 0) + pa(d.montant);
+        if (mk(new Date(d.date)) === k) t[d.categorie] = (t[d.categorie] || 0) + pa(d.montant);
       });
       return t;
     };
 
-    const isCurr = selK === currSPK;
+    const isCurr = selK === currMK;
     const totals = isCurr ? getTotals(selK) : (statsArch[selK]?.depenses || getTotals(selK));
     const total = Object.values(totals).reduce((s, v) => s + v, 0);
     const availMonths = useMemo(() => {
-      const all = new Set([currSPK, ...Object.keys(statsArch)]);
-      depenses.forEach(d => { all.add(spk(new Date(d.date), salaryDay)); });
+      const all = new Set([currMK, ...Object.keys(statsArch)]);
+      depenses.forEach(d => { all.add(mk(new Date(d.date))); });
       return Array.from(all).sort().reverse();
-    }, [statsArch, depenses, currSPK, salaryDay]);
+    }, [statsArch, depenses, currMK]);
 
     const trendData = useMemo(() => {
       const months = [];
       const now = new Date();
       for (let i = 11; i >= 0; i--) {
         const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        const k = `${d.getFullYear()}-${d.getMonth()}`;
-        const t = k === currSPK ? getTotals(k) : (statsArch[k]?.depenses || getTotals(k));
-        months.push({ label: d.toLocaleDateString('fr-FR', { month: 'short' }), total: Object.values(t).reduce((s, v) => s + v, 0) });
+        const y = d.getFullYear(), m = d.getMonth();
+        let total = 0;
+        depenses.forEach(dep => {
+          const dd = new Date(dep.date);
+          if (dd.getFullYear() === y && dd.getMonth() === m) total += pa(dep.montant);
+        });
+        months.push({ label: d.toLocaleDateString('fr-FR', { month: 'short' }), total });
       }
       return months;
-    }, [statsArch, depenses, budget.categories, currSPK, salaryDay]);
+    }, [depenses]);
 
     useEffect(() => {
       if (!lineRef.current) return;
@@ -1702,8 +2062,8 @@ const App = () => {
     }, [totals, budget.categories]);
 
     const topCats = Object.entries(budget.categories).map(([k, c]) => ({ k, c, d: totals[k] || 0 })).filter(x => x.d > 0).sort((a, b) => b.d - a.d);
-    const dayCount = isCurr ? Math.max(1, dayPos(new Date().getDate(), salaryDay) + 1) : 31;
-    const txCount = depenses.filter(d => spk(new Date(d.date), salaryDay) === selK).length;
+    const dayCount = isCurr ? Math.max(1, new Date().getDate()) : 31;
+    const txCount = depenses.filter(d => mk(new Date(d.date)) === selK).length;
 
     return (
       <div className="space-y-6 animate-fade-in">
@@ -1735,7 +2095,7 @@ const App = () => {
 
         <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1">
           {availMonths.slice(0, 12).map(k => {
-            const t = k === currSPK ? Object.values(getTotals(k)).reduce((s, v) => s + v, 0) : (statsArch[k]?.total || Object.values(getTotals(k)).reduce((s, v) => s + v, 0));
+            const t = k === currMK ? Object.values(getTotals(k)).reduce((s, v) => s + v, 0) : (statsArch[k]?.total || Object.values(getTotals(k)).reduce((s, v) => s + v, 0));
             const sel = selK === k;
             return (
               <button key={k} onClick={() => setSelK(k)}
@@ -1965,15 +2325,6 @@ const App = () => {
                 <div className={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow transition-transform ${darkMode ? 'translate-x-5' : 'translate-x-0.5'}`}></div>
               </button>
             </div>
-            <div className="flex items-center justify-between py-4">
-              <div>
-                <div className="font-semibold">Masquer montants</div>
-                <div className="text-xs text-slate-500">Confidentialité</div>
-              </div>
-              <button onClick={() => setHideBalances(!hideBalances)} className={`relative w-12 h-7 rounded-full transition ${hideBalances ? 'bg-violet-600' : 'bg-slate-300'}`}>
-                <div className={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow transition-transform ${hideBalances ? 'translate-x-5' : 'translate-x-0.5'}`}></div>
-              </button>
-            </div>
             <div className="pt-4">
               <button onClick={exportCSV} className="w-full px-4 py-2.5 rounded-xl text-sm font-semibold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 btn-tap flex items-center justify-center gap-2">
                 <I.Download s={15} /> Exporter CSV
@@ -2064,7 +2415,19 @@ const App = () => {
                 <button onClick={() => startEdit(k)} className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center btn-tap">
                   <I.Edit s={15} />
                 </button>
-                <button onClick={() => { if (confirm(`Supprimer "${c.nom}" ?`)) { const nc = { ...budget.categories }; delete nc[k]; setBudget({ ...budget, categories: nc }); toast('Supprimé'); } }}
+                <button onClick={() => {
+                          if (!confirm(`Supprimer "${c.nom}" ?`)) return;
+                          const nc = { ...budget.categories };
+                          delete nc[k];
+                          setBudget({ ...budget, categories: nc });
+                          /* Force-remove from Firestore — set merge:true does a deep merge that won't drop nested keys */
+                          if (user) {
+                            db.collection('users').doc(user.uid).collection('data').doc('budget')
+                              .update({ [`monthlyBudget.categories.${k}`]: firebase.firestore.FieldValue.delete() })
+                              .catch(() => {});
+                          }
+                          toast('Supprimé');
+                        }}
                         className="w-9 h-9 rounded-lg bg-rose-50 dark:bg-rose-950/30 text-rose-500 flex items-center justify-center btn-tap">
                   <I.Trash s={15} />
                 </button>
@@ -2123,103 +2486,108 @@ const App = () => {
   const goTo = (v) => { setView(v); setSidebarOpen(false); };
 
   return (
-    <div className={`min-h-screen ${darkMode ? 'bg-atmosphere-dark' : 'bg-atmosphere-light'} transition-colors`}>
+    <div className="min-h-screen transition-colors" style={{ background: 'var(--bg)' }}>
 
       {/* Sidebar overlay for mobile */}
       {sidebarOpen && <div onClick={() => setSidebarOpen(false)} className="lg:hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-sm animate-fade-in"></div>}
 
       {/* Sidebar */}
-      <aside className={`fixed top-0 bottom-0 left-0 z-50 w-72 glass flex flex-col safe-top transition-transform lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="px-6 py-5 flex items-center gap-3">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-violet-600 via-indigo-600 to-sky-500 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-violet-500/30">€</div>
+      <aside className={`fixed top-0 bottom-0 left-0 z-50 w-[268px] flex flex-col safe-top transition-transform lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+             style={{ background: 'var(--bg)', borderRight: '1px solid var(--border)' }}>
+        <div className="px-[18px] pt-[22px] pb-1 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-[10px] flex items-center justify-center text-white font-semibold text-[17px] tracking-tight"
+               style={{ background: 'var(--ink)' }}>€</div>
           <div>
-            <div className="font-display font-black text-lg leading-tight">Mon Budget</div>
-            <div className="text-[11px] text-slate-500">Finances personnelles</div>
+            <div className="font-semibold text-[15px] leading-tight">Mon Budget</div>
+            <div className="text-[12px] text-[var(--ink-mute)]">Finances personnelles</div>
           </div>
-          <button onClick={() => setSidebarOpen(false)} className="lg:hidden ml-auto w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+          <button onClick={() => setSidebarOpen(false)} className="lg:hidden ml-auto w-9 h-9 rounded-xl bg-[var(--bg-2)] flex items-center justify-center">
             <I.Close s={18}/>
           </button>
         </div>
 
         {/* Balance quick widget */}
-        <div className="mx-4 mb-4 card p-4 bg-gradient-to-br from-violet-600 to-indigo-600 text-white border-0">
-          <div className="text-[10px] font-semibold uppercase tracking-wider opacity-80 mb-1">Solde courant</div>
-          <div className="font-display font-black text-2xl"><Amount v={soldeCompte} /></div>
-          <button onClick={() => setModal('newDepense')} className="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-white/20 hover:bg-white/30 text-xs font-bold btn-tap">
+        <div className="mx-[18px] my-[18px] editorial-card p-[14px]" style={{ paddingBottom: 12 }}>
+          <div className="absolute top-0 left-0 right-0 h-[3px]"
+               style={{ background: 'linear-gradient(90deg, var(--accent) 0%, var(--accent) 38%, transparent 38%)', borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0' }}></div>
+          <div className="eyebrow">Solde courant</div>
+          <div className="text-[26px] font-semibold tracking-[-0.02em] num mt-1.5 mb-3"><Amount v={soldeCompte} /></div>
+          <button onClick={() => setModal('newDepense')} className="btn-ed btn-ghost-ed w-full">
             <I.Plus s={14}/> Nouvelle dépense
           </button>
         </div>
 
-        <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto">
+        <nav className="flex-1 px-3 flex flex-col gap-0.5 overflow-y-auto">
           {NAV.map(n => {
             const A = n.icon;
             const active = view === n.id;
             return (
               <button key={n.id} onClick={() => goTo(n.id)}
-                      className={`nav-link ${active ? 'active text-violet-500 bg-violet-500/10' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50'} w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-sm`}>
-                <A s={18} sw={active ? 2.3 : 1.8} />
+                      className={`w-full flex items-center gap-3 px-[11px] py-[9px] rounded-[10px] font-medium text-[13.5px] transition ${active ? 'text-white' : 'text-[var(--ink-soft)] hover:text-[var(--ink)] hover:bg-[var(--bg-2)]'}`}
+                      style={active ? { background: 'var(--ink)' } : {}}>
+                <A s={17} sw={1.8} />
                 <span className="flex-1 text-left">{n.label}</span>
                 {n.id === 'dashboard' && notifs.length > 0 && (
-                  <span className="w-5 h-5 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center">{notifs.length}</span>
+                  <span className="w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center"
+                        style={active ? { background: '#ffffff20', color: '#fff' } : { background: 'var(--negative)', color: '#fff' }}>{notifs.length}</span>
                 )}
               </button>
             );
           })}
         </nav>
 
-        <div className="p-4 border-t border-slate-200/50 dark:border-slate-800/50">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white font-bold">
-              {(user.displayName || user.email || '?')[0].toUpperCase()}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="font-semibold text-sm truncate">{user.displayName || 'Utilisateur'}</div>
-              <div className="text-[11px] text-slate-500 truncate">{user.email}</div>
-            </div>
-            <button onClick={signOut} className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-rose-500 hover:text-white flex items-center justify-center btn-tap">
-              <I.LogOut s={14} />
-            </button>
+        <div className="p-[14px] mt-auto border-t border-[var(--border)] flex items-center gap-2.5">
+          <div className="w-[34px] h-[34px] rounded-[10px] flex items-center justify-center font-semibold text-[14px]"
+               style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>
+            {(user.displayName || user.email || '?')[0].toUpperCase()}
           </div>
+          <div className="flex-1 min-w-0">
+            <div className="font-medium text-[13px] truncate">{user.displayName || 'Utilisateur'}</div>
+            <div className="text-[11.5px] text-[var(--ink-mute)] truncate">{user.email}</div>
+          </div>
+          <button onClick={signOut} className="w-[30px] h-[30px] rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--bg-2)] flex items-center justify-center text-[var(--ink-mute)] btn-tap">
+            <I.LogOut s={14} />
+          </button>
         </div>
       </aside>
 
       {/* Main content */}
-      <div className="lg:ml-72 min-h-screen flex flex-col">
+      <div className="lg:ml-[268px] min-h-screen flex flex-col">
 
         {/* Header */}
-        <header className="sticky top-0 z-30 glass border-b border-slate-200/50 dark:border-slate-800/30 safe-top">
-          <div className="px-4 lg:px-8 py-3 flex items-center gap-3">
-            <button onClick={() => setSidebarOpen(true)} className="lg:hidden w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+        <header className="sticky top-0 z-30 safe-top"
+                style={{ background: 'var(--bg)', borderBottom: '1px solid var(--border)' }}>
+          <div className="px-4 lg:px-8 py-[18px] flex items-end gap-3">
+            <button onClick={() => setSidebarOpen(true)} className="lg:hidden w-10 h-10 rounded-xl bg-[var(--bg-2)] border border-[var(--border)] flex items-center justify-center">
               <I.Menu s={20} />
             </button>
 
             <div className="lg:hidden flex items-center gap-2 flex-1">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center text-white font-black text-sm">€</div>
+              <div className="w-9 h-9 rounded-[10px] flex items-center justify-center text-white font-semibold text-[15px]"
+                   style={{ background: 'var(--ink)' }}>€</div>
               <div>
-                <div className="font-display font-bold leading-tight">Mon Budget</div>
+                <div className="font-semibold leading-tight">Mon Budget</div>
               </div>
             </div>
 
             <div className="hidden lg:block flex-1">
-              <div className="text-xs text-slate-500">{new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</div>
-              <div className="font-display font-bold text-lg capitalize">{NAV.find(n => n.id === view)?.label}</div>
+              <div className="text-[12.5px] text-[var(--ink-mute)] mb-1">{new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</div>
+              <h1 className="text-[24px] font-semibold tracking-[-0.02em] m-0 capitalize">{NAV.find(n => n.id === view)?.label}</h1>
             </div>
 
             <div className="flex items-center gap-2">
               {syncing && (
-                <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-violet-500/10 text-violet-500 text-xs font-medium">
-                  <div className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse"></div>
+                <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-medium"
+                     style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>
+                  <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--accent)' }}></div>
                   Sync
                 </div>
               )}
-              <button onClick={() => setHideBalances(!hideBalances)} className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center btn-tap">
-                {hideBalances ? <I.EyeOff s={18} /> : <I.Eye s={18} />}
+              <button onClick={() => setDarkMode(!darkMode)} className="w-9 h-9 rounded-[10px] border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--bg-2)] flex items-center justify-center text-[var(--ink-soft)] btn-tap">
+                {darkMode ? <I.Sun s={16} /> : <I.Moon s={16} />}
               </button>
-              <button onClick={() => setDarkMode(!darkMode)} className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center btn-tap">
-                {darkMode ? <I.Sun s={18} /> : <I.Moon s={18} />}
-              </button>
-              <button onClick={() => setModal('newDepense')} className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-sm font-bold shadow-lg shadow-violet-500/30 btn-tap">
-                <I.Plus s={16} sw={3}/> Dépense
+              <button onClick={() => setModal('newDepense')} className="btn-ed btn-primary-ed hidden sm:inline-flex">
+                <I.Plus s={14} sw={2}/> Dépense
               </button>
             </div>
           </div>
@@ -2238,12 +2606,14 @@ const App = () => {
 
       {/* Mobile FAB */}
       <button onClick={() => setModal('newDepense')}
-              className="lg:hidden fixed bottom-24 right-5 z-30 w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-600 via-indigo-600 to-sky-500 text-white flex items-center justify-center shadow-2xl shadow-violet-500/40 btn-tap">
+              className="lg:hidden fixed bottom-24 right-5 z-30 w-14 h-14 rounded-2xl text-white flex items-center justify-center btn-tap"
+              style={{ background: 'var(--ink)', boxShadow: '0 12px 36px -16px oklch(0.20 0.02 250 / 0.5)' }}>
         <I.Plus s={26} sw={2.5} />
       </button>
 
       {/* Mobile bottom nav */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-20 glass border-t border-slate-200/50 dark:border-slate-800/30 safe-bottom">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-20 safe-bottom"
+           style={{ background: 'var(--bg)', borderTop: '1px solid var(--border)' }}>
         <div className="flex items-stretch px-1 py-1">
           {[
             { id: 'dashboard', label: 'Accueil', icon: I.Home },
@@ -2256,7 +2626,8 @@ const App = () => {
             const active = view === n.id;
             return (
               <button key={n.id} onClick={() => setView(n.id)}
-                      className={`flex-1 flex flex-col items-center justify-center py-2 rounded-xl btn-tap transition ${active ? 'text-violet-500' : 'text-slate-400'}`}>
+                      className="flex-1 flex flex-col items-center justify-center py-2 rounded-xl btn-tap transition"
+                      style={active ? { color: 'var(--ink)' } : { color: 'var(--ink-mute)' }}>
                 <A s={20} sw={active ? 2.3 : 1.8} />
                 <span className="text-[10px] mt-0.5 font-semibold">{n.label}</span>
               </button>
@@ -2398,8 +2769,8 @@ const App = () => {
           + Ajouter une charge
         </button>
         <div className="space-y-2">
-          {[...chargesFixes].sort((a, b) => dayPos(a.jourPaiement, salaryDay) - dayPos(b.jourPaiement, salaryDay)).map(c => {
-            const paid = chargesPayees[currSPK]?.[c.id];
+          {[...chargesFixes].sort((a, b) => dayPos(a.jourPaiement, anchorSalaryDay) - dayPos(b.jourPaiement, anchorSalaryDay)).map(c => {
+            const paid = chargesPayees[chargesPeriodKey]?.[c.id];
             return (
               <div key={c.id} className={`rounded-xl p-3 flex items-center gap-3 transition ${paid ? 'bg-emerald-50 dark:bg-emerald-950/30' : 'bg-slate-50 dark:bg-slate-800/50'}`}>
                 <button onClick={() => toggleCharge(c.id)} className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${paid ? 'bg-emerald-500 text-white' : 'bg-white dark:bg-slate-700 border-2 border-slate-300 dark:border-slate-600'}`}>
@@ -2499,7 +2870,7 @@ const App = () => {
         {modal?.type === 'catDetail' && (() => {
           const cat = budget.categories[modal.key];
           if (!cat) return null;
-          const catDeps = depenses.filter(d => d.categorie === modal.key && spk(new Date(d.date), salaryDay) === currSPK);
+          const catDeps = depenses.filter(d => d.categorie === modal.key && mk(new Date(d.date)) === currMK);
           const dep = monthlyTotals[modal.key] || 0;
           const pct = cat.budget > 0 ? (dep / cat.budget) * 100 : 0;
           return (

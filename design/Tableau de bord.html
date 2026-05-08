@@ -1,0 +1,1295 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Mon Budget — Tableau de bord</title>
+<meta name="viewport" content="width=1440">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: oklch(0.985 0.005 85);
+    --bg-2: oklch(0.965 0.005 85);
+    --surface: #ffffff;
+    --ink: oklch(0.22 0.02 250);
+    --ink-soft: oklch(0.42 0.015 250);
+    --ink-mute: oklch(0.60 0.01 250);
+    --border: oklch(0.93 0.004 80);
+    --border-strong: oklch(0.86 0.005 80);
+    --positive: oklch(0.55 0.12 155);
+    --positive-soft: oklch(0.95 0.04 155);
+    --negative: oklch(0.58 0.18 25);
+    --negative-soft: oklch(0.96 0.03 25);
+    --warn: oklch(0.72 0.13 75);
+    /* default accent: deep ink blue (replaces purple) */
+    --accent: oklch(0.30 0.07 245);
+    --accent-2: oklch(0.45 0.10 245);
+    --accent-soft: oklch(0.95 0.02 245);
+    /* category dots */
+    --cat-1: oklch(0.62 0.13 320); /* perso — soft mauve, calmer than violet */
+    --cat-2: oklch(0.55 0.14 240); /* PEA — blue */
+    --cat-3: oklch(0.62 0.10 195); /* livret — teal */
+    --cat-4: oklch(0.60 0.04 80);  /* crypto — warm grey */
+
+    --radius: 14px;
+    --radius-lg: 18px;
+    --radius-sm: 10px;
+    --shadow: 0 1px 0 oklch(0.96 0.004 80), 0 10px 28px -22px oklch(0.30 0.04 250 / 0.18);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Geist", ui-sans-serif, system-ui, -apple-system, "Helvetica Neue", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: "ss01", "ss02", "cv11";
+  }
+
+  .num, .amount {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- shell ---------- */
+  .app {
+    display: grid;
+    grid-template-columns: 268px 1fr;
+    min-height: 100vh;
+  }
+
+  /* ---------- sidebar ---------- */
+  .sidebar {
+    background: var(--bg);
+    border-right: 1px solid var(--border);
+    padding: 22px 18px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 4px 6px 4px 4px;
+  }
+  .brand-mark {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: var(--ink);
+    color: #fff;
+    display: grid; place-items: center;
+    font-weight: 600;
+    font-size: 17px;
+    letter-spacing: -0.02em;
+  }
+  .brand-text { line-height: 1.15; }
+  .brand-text .name { font-weight: 600; font-size: 15px; }
+  .brand-text .sub { font-size: 12px; color: var(--ink-mute); }
+
+  .balance-card {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 14px 14px 12px;
+    position: relative;
+    overflow: hidden;
+  }
+  .balance-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent) 0%, var(--accent) 38%, transparent 38%);
+  }
+  .balance-card .label {
+    font-size: 10.5px;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .balance-card .val {
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin: 6px 0 12px;
+    color: var(--ink);
+  }
+  .balance-card .val .cur { color: var(--ink-mute); font-weight: 500; margin-left: 2px; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border-radius: 10px;
+    padding: 9px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background .15s, border-color .15s;
+    font-family: inherit;
+    color: inherit;
+    background: transparent;
+    white-space: nowrap;
+  }
+  .btn-primary {
+    background: var(--ink);
+    color: #fff;
+  }
+  .btn-primary:hover { background: oklch(0.30 0.02 250); }
+  .btn-ghost {
+    background: var(--bg-2);
+    border-color: var(--border);
+    color: var(--ink);
+  }
+  .btn-ghost:hover { background: oklch(0.94 0.005 80); }
+  .btn-outline {
+    border-color: var(--border-strong);
+    color: var(--ink);
+  }
+  .btn-outline:hover { background: var(--bg-2); }
+
+  .balance-card .btn { width: 100%; }
+
+  .nav { display: flex; flex-direction: column; gap: 2px; margin-top: 4px; }
+  .nav a {
+    display: flex; align-items: center; gap: 12px;
+    padding: 9px 11px;
+    border-radius: 10px;
+    color: var(--ink-soft);
+    text-decoration: none;
+    font-size: 13.5px;
+    font-weight: 500;
+  }
+  .nav a:hover { background: var(--bg-2); color: var(--ink); }
+  .nav a.active {
+    background: var(--ink);
+    color: #fff;
+  }
+  .nav a.active svg { color: #fff; }
+  .nav svg { width: 17px; height: 17px; color: var(--ink-mute); }
+
+  .user {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 8px;
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+  }
+  .avatar {
+    width: 34px; height: 34px;
+    border-radius: 10px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    display: grid; place-items: center;
+    font-weight: 600; font-size: 14px;
+  }
+  .user .meta { line-height: 1.2; min-width: 0; flex: 1; }
+  .user .meta .n { font-weight: 500; font-size: 13px; }
+  .user .meta .e { font-size: 11.5px; color: var(--ink-mute); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .user .out {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    display: grid; place-items: center;
+    color: var(--ink-mute);
+    cursor: pointer;
+    background: var(--surface);
+  }
+
+  /* ---------- main ---------- */
+  .main {
+    padding: 26px 32px 80px;
+    max-width: 1280px;
+    width: 100%;
+  }
+  .topbar {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 26px;
+  }
+  .topbar .crumb { color: var(--ink-mute); font-size: 12.5px; margin-bottom: 4px; }
+  .topbar h1 { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; margin: 0; }
+  .topbar .actions { display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    width: 36px; height: 36px; border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--ink-soft);
+    display: grid; place-items: center;
+    cursor: pointer;
+  }
+  .icon-btn:hover { background: var(--bg-2); }
+
+  /* ---------- grid layout ---------- */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 18px;
+  }
+  .col-3 { grid-column: span 3; }
+  .col-4 { grid-column: span 4; }
+  .col-5 { grid-column: span 5; }
+  .col-7 { grid-column: span 7; }
+  .col-8 { grid-column: span 8; }
+  .col-9 { grid-column: span 9; }
+  .col-12 { grid-column: span 12; }
+
+  /* ---------- card base ---------- */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    position: relative;
+  }
+  .card-head {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .card-eyebrow {
+    font-size: 10.5px;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    font-weight: 500;
+    margin-bottom: 2px;
+    white-space: nowrap;
+  }
+  .card-title { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; margin: 0; }
+  .link-more {
+    color: var(--ink-mute);
+    text-decoration: none;
+    font-size: 12.5px;
+    font-weight: 500;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .link-more:hover { color: var(--ink); }
+  .link-more { white-space: nowrap; }
+
+  /* ---------- KPI 1: hero solde (dark fill) ---------- */
+  .kpi-hero {
+    grid-column: span 3;
+    background: var(--ink);
+    color: #fff;
+    border: 1px solid var(--ink);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi-hero::after {
+    /* topographic-style decoration */
+    content: "";
+    position: absolute;
+    right: -40px; top: -40px;
+    width: 180px; height: 180px;
+    border-radius: 50%;
+    border: 1px solid #ffffff14;
+    box-shadow:
+      0 0 0 12px transparent,
+      0 0 0 13px #ffffff10,
+      0 0 0 28px transparent,
+      0 0 0 29px #ffffff0c,
+      0 0 0 50px transparent,
+      0 0 0 51px #ffffff08;
+  }
+  .kpi-hero .label {
+    font-size: 10.5px; letter-spacing: 0.10em; text-transform: uppercase;
+    color: #ffffffaa; font-weight: 500; white-space: nowrap;
+  }
+  .kpi-hero .eye {
+    width: 28px; height: 28px; border-radius: 8px;
+    background: #ffffff14; color: #fff;
+    display: grid; place-items: center;
+    cursor: pointer; border: none;
+  }
+  .kpi-hero .row { display: flex; align-items: center; justify-content: space-between; }
+  .kpi-hero .val {
+    font-size: 38px; font-weight: 600; letter-spacing: -0.025em;
+    margin: 14px 0 16px;
+  }
+  .kpi-hero .val .cur { color: #ffffffaa; font-weight: 500; margin-left: 4px; }
+  .kpi-hero .ctas { display: flex; gap: 8px; position: relative; z-index: 1; }
+  .kpi-hero .btn-light {
+    background: #ffffff18; color: #fff; border: 1px solid #ffffff20;
+    flex: 1;
+  }
+  .kpi-hero .btn-light:hover { background: #ffffff26; }
+  .kpi-hero .btn-bright {
+    background: #fff; color: var(--ink);
+    flex: 1;
+  }
+
+  /* ---------- KPI 2: avant salaire (calendar ribbon) ---------- */
+  .kpi-cal .ribbon {
+    display: grid;
+    grid-template-columns: repeat(30, 1fr);
+    gap: 3px;
+    margin-bottom: 14px;
+  }
+  .kpi-cal .ribbon i {
+    height: 10px;
+    border-radius: 2px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+  }
+  .kpi-cal .ribbon i.past { background: var(--bg-2); border-color: var(--border); }
+  .kpi-cal .ribbon i.today { background: var(--ink); border-color: var(--ink); }
+  .kpi-cal .ribbon i.future { background: var(--surface); border-color: var(--border); }
+  .kpi-cal .val { font-size: 30px; font-weight: 600; letter-spacing: -0.025em; }
+  .kpi-cal .val .cur { color: var(--ink-mute); font-weight: 500; margin-left: 2px; }
+  .kpi-cal .sub { font-size: 12.5px; color: var(--ink-soft); margin-top: 6px; }
+  .kpi-cal .sub b { color: var(--negative); font-weight: 500; }
+
+  /* ---------- KPI 3: patrimoine (with sparkline) ---------- */
+  .kpi-spark .val { font-size: 30px; font-weight: 600; letter-spacing: -0.025em; }
+  .kpi-spark .val .cur { color: var(--ink-mute); font-weight: 500; margin-left: 2px; }
+  .kpi-spark .sub { font-size: 12.5px; color: var(--ink-soft); margin-top: 6px; }
+  .kpi-spark .spark {
+    margin-top: 14px;
+    height: 36px;
+    width: 100%;
+  }
+  .kpi-spark .pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--positive-soft);
+    color: var(--positive);
+    font-size: 11px; font-weight: 600;
+    padding: 3px 7px; border-radius: 999px;
+  }
+
+  /* ---------- KPI 4: santé budget (ring) ---------- */
+  .kpi-ring { display: grid; grid-template-columns: 76px 1fr; gap: 14px; align-items: center; }
+  .kpi-ring .ring-wrap { position: relative; width: 76px; height: 76px; }
+  .kpi-ring .score {
+    position: absolute; inset: 0; display: grid; place-items: center;
+    font-size: 21px; font-weight: 600; letter-spacing: -0.02em;
+  }
+  .kpi-ring .verdict {
+    font-size: 22px; font-weight: 600; letter-spacing: -0.02em;
+    margin-bottom: 4px;
+  }
+  .kpi-ring .insights { font-size: 12.5px; color: var(--ink-soft); }
+  .kpi-ring .insights a { color: var(--ink); text-decoration: none; font-weight: 500; }
+  .pulse-tag, .kpi-ring .pulse-tag {
+    position: absolute; top: 0; right: 0;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    color: var(--ink-soft);
+    font-size: 11px; font-weight: 500;
+    padding: 4px 8px;
+    border-radius: 999px;
+    display: inline-flex; align-items: center; gap: 6px;
+    white-space: nowrap;
+  }
+  .kpi-ring .pulse-tag .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--positive);
+    box-shadow: 0 0 0 4px oklch(0.55 0.12 155 / 0.15);
+  }
+
+  /* ---------- card differentiators ---------- */
+  /* tiny corner ornament for KPI cards (each different) */
+  .kpi-cal { position: relative; }
+  .kpi-spark { position: relative; }
+  .kpi-ring-card { position: relative; }
+
+  /* ---------- Budgets du mois ---------- */
+  .budgets .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .budget-item {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 14px 16px;
+    background: var(--surface);
+    position: relative;
+  }
+  .budget-item.over { border-color: oklch(0.86 0.04 25); }
+  .budget-item .top {
+    display: flex; align-items: center; gap: 12px; justify-content: space-between;
+  }
+  .budget-item .left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .cat-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: var(--bg-2);
+    display: grid; place-items: center;
+    color: var(--ink);
+    position: relative;
+    border: 1px solid var(--border);
+  }
+  .cat-icon .dot {
+    position: absolute;
+    bottom: -2px; right: -2px;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--surface);
+  }
+  .cat-icon.c1 .dot { background: var(--cat-1); }
+  .cat-icon.c2 .dot { background: var(--cat-2); }
+  .cat-icon.c3 .dot { background: var(--cat-3); }
+  .cat-icon.c4 .dot { background: var(--cat-4); }
+
+  .budget-item .name { font-weight: 600; font-size: 14.5px; letter-spacing: -0.005em; }
+  .budget-item .sub { font-size: 12px; color: var(--ink-mute); margin-top: 2px; white-space: nowrap; }
+  .budget-item .right { text-align: right; }
+  .budget-item .delta { font-weight: 600; font-size: 14px; letter-spacing: -0.01em; white-space: nowrap; }
+  .budget-item .delta.neg { color: var(--negative); }
+  .budget-item .delta.pos { color: var(--positive); }
+  .budget-item .status {
+    font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ink-mute); font-weight: 500; margin-top: 2px; white-space: nowrap;
+  }
+  .budget-item .status.over { color: var(--negative); }
+  .budget-item .status.ok { color: var(--positive); }
+
+  .progress {
+    margin-top: 14px;
+    height: 6px;
+    background: var(--bg-2);
+    border-radius: 99px;
+    overflow: hidden;
+    position: relative;
+  }
+  .progress > i {
+    display: block; height: 100%;
+    border-radius: 99px;
+    background: var(--ink);
+  }
+  .progress.over > i { background: var(--negative); }
+  .progress.ok > i { background: var(--positive); }
+  .progress.cat1 > i { background: var(--cat-1); }
+  .progress.cat2 > i { background: var(--cat-2); }
+  .progress.cat3 > i { background: var(--cat-3); }
+  .progress.cat4 > i { background: var(--cat-4); }
+
+  /* differentiator: subtle tinted left strip on budgets card */
+  .card.budgets::before {
+    content: ""; position: absolute;
+    left: 0; top: 22px; bottom: 22px;
+    width: 3px;
+    border-radius: 0 3px 3px 0;
+    background: var(--ink);
+    opacity: .8;
+  }
+
+  /* ---------- Charges fixes ---------- */
+  .charges .total {
+    font-size: 30px; font-weight: 600; letter-spacing: -0.025em;
+  }
+  .charges .total .cur { color: var(--ink-mute); font-weight: 500; margin-left: 2px; }
+  .charges .total-sub { font-size: 12.5px; color: var(--ink-soft); margin-top: 4px; }
+  .charges .seg {
+    display: flex; gap: 3px; margin: 14px 0 14px;
+  }
+  .charges .seg i {
+    flex: 1; height: 8px; border-radius: 3px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+  }
+  .charges .seg i.paid {
+    background: var(--positive);
+    border-color: var(--positive);
+  }
+  .charges ul {
+    list-style: none; margin: 0; padding: 0;
+    display: flex; flex-direction: column;
+  }
+  .charges li {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 0;
+    border-top: 1px dashed var(--border);
+    font-size: 13.5px;
+  }
+  .charges li:first-child { border-top: none; }
+  .charges li .name { flex: 1; }
+  .charges li .amt { font-variant-numeric: tabular-nums; font-weight: 500; white-space: nowrap; }
+  .charges li.paid .name { color: var(--ink-mute); text-decoration: line-through; }
+  .charges li.paid .amt { color: var(--ink-mute); }
+  .check {
+    width: 18px; height: 18px;
+    border-radius: 6px;
+    border: 1.5px solid var(--border-strong);
+    display: grid; place-items: center;
+    flex-shrink: 0;
+    background: var(--surface);
+  }
+  .check.on {
+    background: var(--positive);
+    border-color: var(--positive);
+    color: #fff;
+  }
+  /* differentiator: dotted border accent */
+  .card.charges {
+    border-style: solid;
+  }
+  .card.charges::before {
+    content: ""; position: absolute;
+    inset: 0; border-radius: var(--radius-lg);
+    pointer-events: none;
+    border: 1px dashed transparent;
+    /* visual marker — tiny corner ticks */
+  }
+  .card.charges .corner {
+    position: absolute; top: 14px; right: 14px;
+    width: 36px; height: 36px;
+    background: var(--positive-soft);
+    color: var(--positive);
+    border-radius: 10px;
+    display: grid; place-items: center;
+  }
+
+  /* ---------- Évolution chart ---------- */
+  .chart-card .head { margin-bottom: 8px; }
+  .chart-card .head h2 { font-size: 18px; font-weight: 600; letter-spacing: -0.015em; margin: 4px 0 0; }
+  .chart-card .pill-neg {
+    background: var(--negative-soft);
+    color: var(--negative);
+    font-size: 11.5px; font-weight: 600;
+    padding: 4px 8px; border-radius: 999px;
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .chart-wrap { position: relative; height: 240px; margin-top: 14px; }
+  .chart-legend {
+    display: flex; gap: 16px; font-size: 12px; color: var(--ink-mute);
+    margin-top: 12px; align-items: center;
+  }
+  .chart-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .chart-legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+  /* differentiator: faint dotted top border bar inside */
+  .card.chart-card::before {
+    content: ""; position: absolute;
+    left: 22px; right: 22px; top: 0;
+    height: 1px;
+    background-image: linear-gradient(to right, var(--border-strong) 50%, transparent 50%);
+    background-size: 6px 1px;
+  }
+
+  /* ---------- Objectifs ---------- */
+  .obj-item { display: grid; grid-template-columns: 38px 1fr auto; gap: 12px; align-items: center; padding: 4px 0; }
+  .obj-item .ic {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    display: grid; place-items: center;
+    border: 1px solid var(--border);
+  }
+  .obj-item .name { font-weight: 500; font-size: 14px; }
+  .obj-item .pct { font-weight: 600; font-size: 14px; font-variant-numeric: tabular-nums; }
+  .obj-bar {
+    grid-column: 1 / -1;
+    margin-top: 10px;
+    height: 6px;
+    background: var(--bg-2);
+    border-radius: 99px;
+    position: relative;
+    overflow: hidden;
+  }
+  .obj-bar i {
+    display: block; height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    border-radius: 99px;
+  }
+  /* differentiator: small flag corner */
+  .card.obj-card::before {
+    content: ""; position: absolute;
+    top: 0; right: 22px;
+    width: 14px; height: 22px;
+    background: var(--accent);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 70%, 0 100%);
+  }
+
+  /* ---------- Transactions ---------- */
+  .tx-list { display: flex; flex-direction: column; }
+  .tx {
+    display: grid; grid-template-columns: 36px 1fr auto;
+    gap: 12px; align-items: center;
+    padding: 11px 0;
+    border-top: 1px solid var(--border);
+  }
+  .tx:first-child { border-top: none; }
+  .tx .ic {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: var(--bg-2);
+    color: var(--ink);
+    display: grid; place-items: center;
+    font-weight: 600; font-size: 13px;
+    border: 1px solid var(--border);
+  }
+  .tx .ic.c1 { background: oklch(0.97 0.025 320); color: oklch(0.45 0.12 320); }
+  .tx .ic.c2 { background: oklch(0.97 0.025 240); color: oklch(0.42 0.13 240); }
+  .tx .ic.c3 { background: oklch(0.97 0.02 195); color: oklch(0.42 0.10 195); }
+  .tx .ic.c4 { background: oklch(0.96 0.01 80); color: oklch(0.45 0.04 80); }
+  .tx .name { font-weight: 500; font-size: 13.5px; }
+  .tx .meta { font-size: 11.5px; color: var(--ink-mute); margin-top: 1px; }
+  .tx .amt { font-variant-numeric: tabular-nums; font-weight: 600; font-size: 14px; }
+  .tx .amt.pos { color: var(--positive); }
+  .tx .amt.neg { color: var(--ink); }
+
+  /* differentiator: tx card uses a subtle rule under header */
+  .card.tx-card .card-head { padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
+
+  /* ---------- right column wrapper ---------- */
+  .right-col { display: flex; flex-direction: column; gap: 18px; }
+
+  /* ---------- tweaks panel ---------- */
+  .tweaks {
+    position: fixed; bottom: 18px; right: 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 14px 12px;
+    box-shadow: 0 24px 60px -32px oklch(0.20 0.02 250 / 0.30);
+    width: 240px;
+    display: none;
+    z-index: 50;
+  }
+  .tweaks.on { display: block; }
+  .tweaks h3 { margin: 0 0 10px; font-size: 13px; font-weight: 600; }
+  .tweaks .swatches { display: flex; gap: 8px; }
+  .tweaks .sw {
+    flex: 1; aspect-ratio: 1; border-radius: 8px;
+    border: 2px solid transparent;
+    cursor: pointer; position: relative;
+  }
+  .tweaks .sw.active { border-color: var(--ink); }
+  .tweaks .sw::after {
+    content: ""; position: absolute; inset: 4px; border-radius: 4px;
+    background: var(--c);
+  }
+  .tweaks .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 12px; font-size: 12px; color: var(--ink-soft); }
+  .tweaks button.close {
+    position: absolute; top: 8px; right: 8px;
+    width: 24px; height: 24px;
+    border: none; background: transparent; cursor: pointer;
+    color: var(--ink-mute);
+    border-radius: 6px;
+  }
+  .tweaks button.close:hover { background: var(--bg-2); color: var(--ink); }
+
+  .tw-toggle {
+    position: fixed; bottom: 18px; right: 18px;
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    background: var(--ink); color: #fff;
+    border: none; cursor: pointer;
+    display: grid; place-items: center;
+    box-shadow: 0 12px 36px -16px oklch(0.20 0.02 250 / 0.5);
+    z-index: 49;
+  }
+
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- ============== SIDEBAR ============== -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">€</div>
+      <div class="brand-text">
+        <div class="name">Mon Budget</div>
+        <div class="sub">Finances personnelles</div>
+      </div>
+    </div>
+
+    <div class="balance-card">
+      <div class="label">Solde courant</div>
+      <div class="val num">205,45<span class="cur"> €</span></div>
+      <button class="btn btn-ghost">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+        Nouvelle dépense
+      </button>
+    </div>
+
+    <nav class="nav">
+      <a href="#" class="active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/></svg>
+        Tableau de bord
+      </a>
+      <a href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
+        Objectifs
+      </a>
+      <a href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-9"/><path d="M14 6h7v7"/></svg>
+        PEA
+      </a>
+      <a href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+        Crypto
+      </a>
+      <a href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V8"/><path d="M10 20v-7"/><path d="M16 20V4"/><path d="M22 20H2"/></svg>
+        Statistiques
+      </a>
+      <a href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        Historique
+      </a>
+      <a href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Paramètres
+      </a>
+    </nav>
+
+    <div class="user">
+      <div class="avatar">T</div>
+      <div class="meta">
+        <div class="n">Timothée Delarche</div>
+        <div class="e">timothee.delarche@gmail.com</div>
+      </div>
+      <button class="out" aria-label="Se déconnecter">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ============== MAIN ============== -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="crumb">vendredi 8 mai 2026</div>
+        <h1>Tableau de bord</h1>
+      </div>
+      <div class="actions">
+        <button class="icon-btn" title="Masquer les montants">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+        <button class="icon-btn" title="Mode sombre">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+        <button class="btn btn-primary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          Dépense
+        </button>
+      </div>
+    </div>
+
+    <!-- ============== KPI ROW ============== -->
+    <section class="grid" style="margin-bottom: 20px;">
+      <!-- 1. Hero solde -->
+      <div class="kpi-hero col-3">
+        <div class="row">
+          <div class="label">Solde courant</div>
+          <button class="eye" aria-label="Masquer">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <div class="val num">205,45<span class="cur">€</span></div>
+        <div class="ctas">
+          <button class="btn btn-light">Modifier</button>
+          <button class="btn btn-bright">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            Revenu
+          </button>
+        </div>
+      </div>
+
+      <!-- 2. Avant salaire (calendar ribbon) -->
+      <div class="card kpi-cal col-3">
+        <div class="card-head" style="margin-bottom: 10px;">
+          <div>
+            <div class="card-eyebrow">Avant salaire</div>
+          </div>
+          <div style="font-size: 11px; color: var(--ink-mute); font-variant-numeric: tabular-nums; white-space: nowrap;">J−22</div>
+        </div>
+        <div class="ribbon" id="ribbon"></div>
+        <div class="val num">33,67<span class="cur">€</span></div>
+        <div class="sub"><b>−171,78 €</b> de charges restantes</div>
+      </div>
+
+      <!-- 3. Patrimoine total (sparkline) -->
+      <div class="card kpi-spark col-3">
+        <div class="card-head" style="margin-bottom: 10px;">
+          <div>
+            <div class="card-eyebrow">Patrimoine total</div>
+          </div>
+          <span class="pill">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17l6-6 4 4 4-7"/></svg>
+            +4,2%
+          </span>
+        </div>
+        <div class="val num">3 042<span class="cur">€</span></div>
+        <div class="sub">Compte + PEA + Crypto + Épargne</div>
+        <svg class="spark" viewBox="0 0 200 40" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="sparkFill" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="oklch(0.55 0.12 155)" stop-opacity=".25"/>
+              <stop offset="100%" stop-color="oklch(0.55 0.12 155)" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <path d="M 0 28 L 25 26 L 50 30 L 75 22 L 100 24 L 125 18 L 150 20 L 175 12 L 200 8 L 200 40 L 0 40 Z" fill="url(#sparkFill)"/>
+          <path d="M 0 28 L 25 26 L 50 30 L 75 22 L 100 24 L 125 18 L 150 20 L 175 12 L 200 8" fill="none" stroke="oklch(0.55 0.12 155)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+
+      <!-- 4. Santé budget (ring) -->
+      <div class="card kpi-ring-card col-3" style="position: relative;">
+        <div class="card-head" style="margin-bottom: 12px;">
+          <div>
+            <div class="card-eyebrow">Santé du budget</div>
+          </div>
+          <span class="pulse-tag">
+            <span class="dot"></span>
+            6 insights
+          </span>
+        </div>
+        <div class="kpi-ring">
+          <div class="ring-wrap">
+            <svg viewBox="0 0 76 76" width="76" height="76">
+              <circle cx="38" cy="38" r="32" fill="none" stroke="oklch(0.94 0.01 80)" stroke-width="6"/>
+              <circle cx="38" cy="38" r="32" fill="none" stroke="var(--positive)" stroke-width="6" stroke-linecap="round"
+                stroke-dasharray="201.06" stroke-dashoffset="98.5"
+                transform="rotate(-90 38 38)"/>
+            </svg>
+            <div class="score num">51</div>
+          </div>
+          <div>
+            <div class="verdict">Bon</div>
+            <div class="insights">3 dépenses à<br>surveiller · <a href="#">Voir →</a></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============== MIDDLE ROW ============== -->
+    <section class="grid" style="margin-bottom: 20px;">
+      <!-- Budgets du mois -->
+      <div class="card budgets col-8">
+        <div class="card-head">
+          <div>
+            <div class="card-eyebrow">mai 2026</div>
+            <h2 class="card-title">Budgets du mois</h2>
+          </div>
+          <a class="link-more" href="#">Gérer →</a>
+        </div>
+
+        <div class="row">
+          <!-- Dépenses perso -->
+          <div class="budget-item over">
+            <div class="top">
+              <div class="left">
+                <div class="cat-icon c1">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><path d="M7 15h3"/></svg>
+                  <span class="dot"></span>
+                </div>
+                <div>
+                  <div class="name">Dépenses perso</div>
+                  <div class="sub num">113,51 € / 100,00 €</div>
+                </div>
+              </div>
+              <div class="right">
+                <div class="delta neg num">−13,51 €</div>
+                <div class="status over">Dépassé</div>
+              </div>
+            </div>
+            <div class="progress over"><i style="width: 100%"></i></div>
+          </div>
+
+          <!-- PEA -->
+          <div class="budget-item over">
+            <div class="top">
+              <div class="left">
+                <div class="cat-icon c2">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-9"/><path d="M14 6h7v7"/></svg>
+                  <span class="dot"></span>
+                </div>
+                <div>
+                  <div class="name">PEA</div>
+                  <div class="sub num">109,00 € / 100,00 €</div>
+                </div>
+              </div>
+              <div class="right">
+                <div class="delta neg num">−9,00 €</div>
+                <div class="status over">Dépassé</div>
+              </div>
+            </div>
+            <div class="progress over"><i style="width: 100%"></i></div>
+          </div>
+
+          <!-- Livret A -->
+          <div class="budget-item">
+            <div class="top">
+              <div class="left">
+                <div class="cat-icon c3">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-6 9 6"/><path d="M5 10v8h14v-8"/><path d="M9 18v-5"/><path d="M15 18v-5"/></svg>
+                  <span class="dot"></span>
+                </div>
+                <div>
+                  <div class="name">Livret A</div>
+                  <div class="sub num">100,00 € / 100,00 €</div>
+                </div>
+              </div>
+              <div class="right">
+                <div class="delta num">0,00 €</div>
+                <div class="status ok">Atteint</div>
+              </div>
+            </div>
+            <div class="progress cat3"><i style="width: 100%"></i></div>
+          </div>
+
+          <!-- Crypto -->
+          <div class="budget-item">
+            <div class="top">
+              <div class="left">
+                <div class="cat-icon c4">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 12h6"/><path d="M11 9v6"/></svg>
+                  <span class="dot"></span>
+                </div>
+                <div>
+                  <div class="name">Crypto</div>
+                  <div class="sub num">0,00 € / 0,00 €</div>
+                </div>
+              </div>
+              <div class="right">
+                <div class="delta num" style="color: var(--ink-mute)">—</div>
+                <div class="status">Restant</div>
+              </div>
+            </div>
+            <div class="progress"><i style="width: 0%"></i></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charges fixes -->
+      <div class="card charges col-4">
+        <div class="card-head">
+          <div>
+            <div class="card-eyebrow">Mensuelles</div>
+            <h2 class="card-title">Charges fixes</h2>
+          </div>
+          <a class="link-more" href="#">Tout voir →</a>
+        </div>
+        <div class="total num">577,44<span class="cur"> €</span></div>
+        <div class="total-sub"><b style="color: var(--positive); font-weight: 600">3</b> sur 9 prélèvements payés</div>
+        <div class="seg">
+          <i class="paid"></i><i class="paid"></i><i class="paid"></i>
+          <i></i><i></i><i></i><i></i><i></i><i></i>
+        </div>
+        <ul>
+          <li class="paid">
+            <span class="check on">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </span>
+            <span class="name">Cotisation mensuelle CB</span>
+            <span class="amt num">2,00 €</span>
+          </li>
+          <li class="paid">
+            <span class="check on">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </span>
+            <span class="name">Abonnement Claude</span>
+            <span class="amt num">23,66 €</span>
+          </li>
+          <li class="paid">
+            <span class="check on">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </span>
+            <span class="name">Loyer</span>
+            <span class="amt num">380,00 €</span>
+          </li>
+          <li>
+            <span class="check"></span>
+            <span class="name">Macif</span>
+            <span class="amt num">24,80 €</span>
+          </li>
+          <li>
+            <span class="check"></span>
+            <span class="name">Odivea</span>
+            <span class="amt num">24,00 €</span>
+          </li>
+          <li>
+            <span class="check"></span>
+            <span class="name">Free mobile</span>
+            <span class="amt num">19,99 €</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============== BOTTOM ROW ============== -->
+    <section class="grid">
+      <!-- Évolution chart -->
+      <div class="card chart-card col-8">
+        <div class="card-head head">
+          <div>
+            <div class="card-eyebrow">6 derniers mois</div>
+            <h2>Évolution des dépenses</h2>
+          </div>
+          <span class="pill-neg">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7l6 6 4-4 4 7"/></svg>
+            −18%
+          </span>
+        </div>
+
+        <div class="chart-wrap">
+          <svg id="chart" viewBox="0 0 720 240" width="100%" height="100%" preserveAspectRatio="none"></svg>
+        </div>
+
+        <div class="chart-legend">
+          <span><i style="background: var(--ink)"></i> Dépenses mensuelles</span>
+          <span><i style="background: var(--accent); border: 1px dashed var(--accent)"></i> Tendance 3 mois</span>
+          <span style="margin-left: auto; font-variant-numeric: tabular-nums;">Moyenne <b style="color: var(--ink); font-weight: 600">512,40 €</b></span>
+        </div>
+      </div>
+
+      <!-- Right column: Objectifs + Transactions -->
+      <div class="col-4 right-col">
+        <!-- Objectifs -->
+        <div class="card obj-card">
+          <div class="card-head" style="margin-bottom: 10px;">
+            <div>
+              <div class="card-eyebrow">En cours</div>
+              <h2 class="card-title">Objectifs</h2>
+            </div>
+            <a class="link-more" href="#">Tout voir →</a>
+          </div>
+          <div class="obj-item">
+            <div class="ic">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <div>
+              <div class="name">Livret A — 5 000 €</div>
+              <div style="font-size: 11.5px; color: var(--ink-mute); margin-top: 2px;" class="num">150 € / 5 000 €</div>
+            </div>
+            <div class="pct">3%</div>
+            <div class="obj-bar"><i style="width: 3%"></i></div>
+          </div>
+        </div>
+
+        <!-- Transactions récentes -->
+        <div class="card tx-card">
+          <div class="card-head">
+            <div>
+              <div class="card-eyebrow">Cette semaine</div>
+              <h2 class="card-title">Transactions récentes</h2>
+            </div>
+            <a class="link-more" href="#">Tout voir →</a>
+          </div>
+          <div class="tx-list">
+            <div class="tx">
+              <div class="ic c1">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h18l-1 11H4z"/><path d="M8 9V6a4 4 0 0 1 8 0v3"/></svg>
+              </div>
+              <div>
+                <div class="name">Carrefour Express</div>
+                <div class="meta">Aujourd'hui · 12:34 · Dépenses perso</div>
+              </div>
+              <div class="amt neg num">−18,40 €</div>
+            </div>
+            <div class="tx">
+              <div class="ic c3">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg>
+              </div>
+              <div>
+                <div class="name">Virement Livret A</div>
+                <div class="meta">Hier · Épargne</div>
+              </div>
+              <div class="amt pos num">+100,00 €</div>
+            </div>
+            <div class="tx">
+              <div class="ic c2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-9"/><path d="M14 6h7v7"/></svg>
+              </div>
+              <div>
+                <div class="name">Achat ETF World</div>
+                <div class="meta">5 mai · PEA</div>
+              </div>
+              <div class="amt neg num">−109,00 €</div>
+            </div>
+            <div class="tx">
+              <div class="ic c4">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/></svg>
+              </div>
+              <div>
+                <div class="name">Loyer mai</div>
+                <div class="meta">2 mai · Charges fixes</div>
+              </div>
+              <div class="amt neg num">−380,00 €</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ============== TWEAKS ============== -->
+<button class="tw-toggle" id="twToggle" aria-label="Tweaks">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10"/><path d="M18 6h2"/><path d="M4 12h2"/><path d="M10 12h10"/><path d="M4 18h14"/><path d="M20 18h0.01"/><circle cx="16" cy="6" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="20" cy="18" r="2"/></svg>
+</button>
+<div class="tweaks" id="tweaks">
+  <button class="close" id="twClose" aria-label="Fermer">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+  </button>
+  <h3>Couleur d'accent</h3>
+  <div class="swatches">
+    <button class="sw active" data-acc="ink" style="--c: oklch(0.30 0.07 245)" title="Ink Blue"></button>
+    <button class="sw" data-acc="forest" style="--c: oklch(0.45 0.10 155)" title="Forest"></button>
+    <button class="sw" data-acc="terracotta" style="--c: oklch(0.55 0.13 35)" title="Terracotta"></button>
+    <button class="sw" data-acc="slate" style="--c: oklch(0.40 0.02 250)" title="Slate"></button>
+  </div>
+  <div class="row">
+    <span>Carte héro</span>
+    <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;">
+      <input type="checkbox" id="heroDark" checked>
+      <span>foncée</span>
+    </label>
+  </div>
+</div>
+
+<!-- ============== JS ============== -->
+<script>
+  // ----- calendar ribbon (30 days, today = J-22 means past 8 days) -----
+  (function() {
+    const r = document.getElementById('ribbon');
+    if (!r) return;
+    const today = 7; // 7 days passed, day 8 = today, rest future
+    for (let i = 0; i < 30; i++) {
+      const d = document.createElement('i');
+      if (i < today) d.classList.add('past');
+      else if (i === today) d.classList.add('today');
+      else d.classList.add('future');
+      r.appendChild(d);
+    }
+  })();
+
+  // ----- chart: 6 month bars + thin trend line -----
+  (function() {
+    const svg = document.getElementById('chart');
+    if (!svg) return;
+    const W = 720, H = 240;
+    const padL = 44, padR = 12, padT = 14, padB = 30;
+    const months = [
+      { label: 'Déc', val: 642 },
+      { label: 'Jan', val: 588 },
+      { label: 'Fév', val: 510 },
+      { label: 'Mar', val: 468 },
+      { label: 'Avr', val: 538 },
+      { label: 'Mai', val: 328 },
+    ];
+    const max = 700;
+    const innerW = W - padL - padR;
+    const innerH = H - padT - padB;
+    const n = months.length;
+    const slot = innerW / n;
+    const barW = 32;
+
+    let html = '';
+
+    // y grid lines + labels (0, 200, 400, 600)
+    const ticks = [0, 200, 400, 600];
+    ticks.forEach(t => {
+      const y = padT + innerH * (1 - t / max);
+      html += `<line x1="${padL}" x2="${W - padR}" y1="${y}" y2="${y}" stroke="oklch(0.93 0.004 80)" stroke-width="1"/>`;
+      html += `<text x="${padL - 8}" y="${y + 4}" text-anchor="end" fill="oklch(0.62 0.01 250)" font-size="11" font-family="Geist Mono, ui-monospace" >${t} €</text>`;
+    });
+
+    // bars
+    months.forEach((m, i) => {
+      const cx = padL + slot * (i + 0.5);
+      const h = innerH * (m.val / max);
+      const y = padT + innerH - h;
+      const x = cx - barW / 2;
+      html += `<rect x="${x}" y="${y}" width="${barW}" height="${h}" rx="4" fill="oklch(0.22 0.02 250)"/>`;
+      // small value label above bar
+      html += `<text x="${cx}" y="${y - 6}" text-anchor="middle" fill="oklch(0.42 0.015 250)" font-size="11" font-weight="500" font-family="Geist, sans-serif" >${m.val} €</text>`;
+      // x label
+      html += `<text x="${cx}" y="${H - 8}" text-anchor="middle" fill="oklch(0.60 0.01 250)" font-size="11.5" font-family="Geist, sans-serif">${m.label}</text>`;
+    });
+
+    // trend line — 3-month rolling average, dashed
+    const rolling = months.map((_, i) => {
+      const slice = months.slice(Math.max(0, i - 2), i + 1);
+      return slice.reduce((s, x) => s + x.val, 0) / slice.length;
+    });
+    let path = '';
+    rolling.forEach((v, i) => {
+      const cx = padL + slot * (i + 0.5);
+      const y = padT + innerH * (1 - v / max);
+      path += (i === 0 ? 'M' : 'L') + ` ${cx} ${y} `;
+    });
+    html += `<path d="${path}" fill="none" stroke="var(--accent)" stroke-width="1.6" stroke-dasharray="4 4" stroke-linecap="round"/>`;
+    rolling.forEach((v, i) => {
+      const cx = padL + slot * (i + 0.5);
+      const y = padT + innerH * (1 - v / max);
+      html += `<circle cx="${cx}" cy="${y}" r="2.5" fill="var(--accent)"/>`;
+    });
+
+    svg.innerHTML = html;
+  })();
+
+  // ----- tweaks -----
+  (function() {
+    const toggle = document.getElementById('twToggle');
+    const panel = document.getElementById('tweaks');
+    const close = document.getElementById('twClose');
+    toggle.addEventListener('click', () => {
+      panel.classList.add('on');
+      toggle.style.display = 'none';
+    });
+    close.addEventListener('click', () => {
+      panel.classList.remove('on');
+      toggle.style.display = '';
+    });
+
+    const accents = {
+      ink:        { main: 'oklch(0.30 0.07 245)', alt: 'oklch(0.45 0.10 245)', soft: 'oklch(0.95 0.02 245)' },
+      forest:     { main: 'oklch(0.40 0.09 155)', alt: 'oklch(0.55 0.12 155)', soft: 'oklch(0.95 0.03 155)' },
+      terracotta: { main: 'oklch(0.50 0.13 35)',  alt: 'oklch(0.62 0.14 35)',  soft: 'oklch(0.96 0.03 35)'  },
+      slate:      { main: 'oklch(0.36 0.02 250)', alt: 'oklch(0.50 0.02 250)', soft: 'oklch(0.94 0.005 250)' },
+    };
+
+    document.querySelectorAll('.tweaks .sw').forEach(b => {
+      b.addEventListener('click', () => {
+        document.querySelectorAll('.tweaks .sw').forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+        const a = accents[b.dataset.acc];
+        const root = document.documentElement;
+        root.style.setProperty('--accent', a.main);
+        root.style.setProperty('--accent-2', a.alt);
+        root.style.setProperty('--accent-soft', a.soft);
+      });
+    });
+
+    const heroDark = document.getElementById('heroDark');
+    heroDark.addEventListener('change', () => {
+      const hero = document.querySelector('.kpi-hero');
+      if (heroDark.checked) {
+        hero.style.background = '';
+        hero.style.color = '';
+        hero.style.borderColor = '';
+      } else {
+        hero.style.background = '#fff';
+        hero.style.color = 'var(--ink)';
+        hero.style.borderColor = 'var(--border)';
+        hero.querySelectorAll('.label').forEach(e => e.style.color = 'var(--ink-mute)');
+        hero.querySelectorAll('.cur').forEach(e => e.style.color = 'var(--ink-mute)');
+        const eye = hero.querySelector('.eye');
+        if (eye) { eye.style.background = 'var(--bg-2)'; eye.style.color = 'var(--ink-soft)'; }
+        const light = hero.querySelector('.btn-light');
+        if (light) { light.style.background = 'var(--bg-2)'; light.style.color = 'var(--ink)'; light.style.borderColor = 'var(--border)'; }
+        const bright = hero.querySelector('.btn-bright');
+        if (bright) { bright.style.background = 'var(--ink)'; bright.style.color = '#fff'; }
+      }
+    });
+  })();
+</script>
+
+</body>
+</html>
